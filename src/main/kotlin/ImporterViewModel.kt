@@ -1,4 +1,5 @@
 import androidx.compose.runtime.*
+import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -96,6 +97,10 @@ object ImporterViewModel {
         return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0)
     }
 
+    fun isLoginError(): Boolean{
+        return (loginState==LoginState.ERROR)
+    }
+
 
     fun maxFilesCheckedReached(): Boolean{
         return featureFiles.filter{ file->file.isChecked==true}.size>=10
@@ -121,10 +126,18 @@ object ImporterViewModel {
     fun logIn() = GlobalScope.launch {
         launch {
             delay(1000L)
-            isLoggingIn=false
-            appState = AppState.DEFAULT
-            loginState = LoginState.LOGGED_IN
-            password=""
+            if (logInOnXRay(username,password) == HttpStatusCode(200,"OK")){
+                isLoggingIn=false
+                appState = AppState.DEFAULT
+                loginState = LoginState.LOGGED_IN
+                password=""
+            }else{
+                isLoggingIn=false
+                appState = AppState.DEFAULT
+                // TODO This is not working. Works with LoginState.LOGGED_OUT.
+                loginState = LoginState.ERROR
+                password=""
+            }
         }
     }
 
@@ -158,5 +171,5 @@ enum class AppState {
 }
 
 enum class LoginState {
-    LOGGED_OUT, LOGGED_IN
+    LOGGED_OUT, LOGGED_IN, ERROR
 }

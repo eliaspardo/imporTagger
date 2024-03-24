@@ -61,7 +61,9 @@ fun LoginBox(
                             }, "Show Password"
                         )
                     }
-                }
+                },
+                // TODO this is not working
+                isError = ImporterViewModel.isLoginError()
             )
 
         }

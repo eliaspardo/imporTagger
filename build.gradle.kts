@@ -18,6 +18,8 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
+val ktor_version: String by project
+
 dependencies {
     testImplementation(kotlin("test"))
     implementation(compose.desktop.currentOs)
@@ -25,6 +27,8 @@ dependencies {
     //implementation("cafe.adriel.voyager:voyager-navigator:1.0.0-rc06")
     //implementation("com.darkrockstudios:mpfilepicker:2.0.2")
     implementation(kotlin("stdlib-jdk8"))
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
 }
 
 tasks.test {
