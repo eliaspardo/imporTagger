@@ -1,0 +1,64 @@
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+
+@Composable
+fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+    Scaffold(scaffoldState = scaffoldState){
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Import", Modifier.width(60.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary)
+                Text("Filename", Modifier.width(200.dp), textAlign = TextAlign.Left, color = MaterialTheme.colors.onPrimary)
+                Text("Path", Modifier.width(200.dp), textAlign = TextAlign.Left, color = MaterialTheme.colors.onPrimary)
+                Text("Remove", Modifier.width(60.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary)
+            }
+            Column(Modifier.fillMaxWidth().background(MaterialTheme.colors.primary).verticalScroll(rememberScrollState())) {
+                ImporterViewModel.featureFiles.forEach { file ->
+                    // If file was already imported
+                    Surface(
+                        Modifier.fillMaxWidth(),
+                        color = if (file.isImported) Color.LightGray else MaterialTheme.colors.background
+                    ) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = file.isChecked,
+                                onCheckedChange = file.onCheckedChange,
+                                Modifier.width(60.dp),
+                                enabled = file.isEnabled()
+                            )
+                            Text(file.name, Modifier.width(125.dp))
+                            Text(file.path, Modifier.width(300.dp))
+                            IconButton(
+                                onClick = { onRemoveFile(file) },
+                                Modifier.width(60.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, "Remove file")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(ImporterViewModel.maxFilesCheckedReached()){
+            scope.launch {
+                scaffoldState.snackbarHostState.showSnackbar("Max no. of files to import reached: 10")
+            }
+        }
+    }
+}
+
+
+
