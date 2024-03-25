@@ -1,8 +1,6 @@
+import ImporterViewModel.loginResponse
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -14,7 +12,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -62,12 +59,18 @@ fun LoginBox(
                         )
                     }
                 },
-                // TODO this is not working
                 isError = ImporterViewModel.isLoginError()
             )
-
         }
         if (ImporterViewModel.appState != AppState.LOGGING_IN) {
+            if (ImporterViewModel.isLoginError()) {
+                Text(
+                    text = "Wrong username / password. Error Code: "+loginResponse,
+                    color = MaterialTheme.colors.error,
+                    style = MaterialTheme.typography.caption,
+                    modifier = Modifier.padding(start = 16.dp, top = 0.dp)
+                )
+            }
             Button(onClick = onLoginClick, enabled = ImporterViewModel.isLoginButtonEnabled()) {
                 Text("Log In")
             }
@@ -100,7 +103,7 @@ fun XRayLoginBox(
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
-    if(ImporterViewModel.loginState==LoginState.LOGGED_OUT){
+    if(ImporterViewModel.loginState==LoginState.LOGGED_OUT||ImporterViewModel.loginState==LoginState.ERROR){
         LoginBox(onLoginChanged, onLoginClick)
     }else{
         LogoutBox(onLogoutClick)

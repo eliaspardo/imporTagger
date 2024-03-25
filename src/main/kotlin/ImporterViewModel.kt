@@ -1,4 +1,5 @@
 import androidx.compose.runtime.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -9,7 +10,7 @@ object ImporterViewModel {
         private set
     var testInfoFiles = mutableStateListOf<java.io.File>()
         private set
-    var username by  mutableStateOf("")
+    var username by mutableStateOf("")
         private set
     var password by mutableStateOf("")
         private set
@@ -21,6 +22,8 @@ object ImporterViewModel {
         private set
     var loginState by mutableStateOf(LoginState.LOGGED_OUT)
         private set
+
+    var loginResponse by mutableStateOf(404)
 
     // Lambda callback functions for the UI
     val onImportClick: () -> Unit = {
