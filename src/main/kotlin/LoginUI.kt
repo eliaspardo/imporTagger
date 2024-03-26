@@ -1,5 +1,5 @@
-import ImporterViewModel.loginResponse
-import androidx.compose.foundation.background
+import ImporterViewModel.loginResponseCode
+import ImporterViewModel.loginResponseMessage
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -22,7 +22,7 @@ fun LoginBox(
     onLoginChanged: (username: String, password:String) -> Unit,
     onLoginClick: () -> Unit
 ) {
-    var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    var isClientSecretVisible by rememberSaveable { mutableStateOf(false) }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -32,26 +32,26 @@ fun LoginBox(
         ) {
             //Text(text = "XRay Login", fontSize = 25.sp)
             OutlinedTextField(
-                value = ImporterViewModel.username,
-                onValueChange = { onLoginChanged(it, ImporterViewModel.password) },
-                label = { Text("XRay Username") },
+                value = ImporterViewModel.xrayClientID,
+                onValueChange = { onLoginChanged(it, ImporterViewModel.xrayClientSecret) },
+                label = { Text("XRay Client ID") },
                 modifier = Modifier.padding(5.dp)
             )
             OutlinedTextField(
-                value = ImporterViewModel.password,
-                onValueChange = { onLoginChanged(ImporterViewModel.username, it) },
-                label = { Text("Password") },
+                value = ImporterViewModel.xrayClientSecret,
+                onValueChange = { onLoginChanged(ImporterViewModel.xrayClientID, it) },
+                label = { Text("XRay Client Secret") },
                 modifier = Modifier.padding(5.dp),
                 visualTransformation =
-                if (isPasswordVisible) {
+                if (isClientSecretVisible) {
                     VisualTransformation.None
                 } else {
                     PasswordVisualTransformation()
                 },
                 trailingIcon = {
-                    IconToggleButton(checked = isPasswordVisible, onCheckedChange = { isPasswordVisible = it }) {
+                    IconToggleButton(checked = isClientSecretVisible, onCheckedChange = { isClientSecretVisible = it }) {
                         Icon(
-                            imageVector = if (isPasswordVisible) {
+                            imageVector = if (isClientSecretVisible) {
                                 Icons.Default.VisibilityOff
                             } else {
                                 Icons.Default.Visibility
@@ -65,7 +65,7 @@ fun LoginBox(
         if (ImporterViewModel.appState != AppState.LOGGING_IN) {
             if (ImporterViewModel.isLoginError()) {
                 Text(
-                    text = "Wrong username / password. Error Code: "+loginResponse,
+                    text = "Login Error. Error Code: "+loginResponseCode+" "+loginResponseMessage,
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier.padding(start = 16.dp, top = 0.dp)
@@ -86,7 +86,7 @@ fun LogoutBox(onLogoutClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ){
-        Text(text = "Logged in as ${ImporterViewModel.username}", fontSize = 25.sp)
+        Text(text = "Logged in as ${ImporterViewModel.xrayClientID}", fontSize = 25.sp)
         if(ImporterViewModel.appState!=AppState.LOGGING_OUT) {
             Button(onClick = onLogoutClick, enabled = ImporterViewModel.isLogoutButtonEnabled()) {
                 Text("Log Out")

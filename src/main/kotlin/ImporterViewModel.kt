@@ -1,5 +1,4 @@
 import androidx.compose.runtime.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -10,9 +9,9 @@ object ImporterViewModel {
         private set
     var testInfoFiles = mutableStateListOf<java.io.File>()
         private set
-    var username by mutableStateOf("")
+    var xrayClientID by mutableStateOf("")
         private set
-    var password by mutableStateOf("")
+    var xrayClientSecret by mutableStateOf("")
         private set
     var percentageImported by mutableStateOf(0f)
         private set
@@ -23,7 +22,12 @@ object ImporterViewModel {
     var loginState by mutableStateOf(LoginState.LOGGED_OUT)
         private set
 
-    var loginResponse by mutableStateOf(404)
+    var loginResponseCode by mutableStateOf(404)
+    var loginResponseMessage by mutableStateOf("")
+    var loginToken by mutableStateOf("")
+
+    var importResponseCode by mutableStateOf(404)
+    var importResponseMessage by mutableStateOf("")
 
     // Lambda callback functions for the UI
     val onImportClick: () -> Unit = {
@@ -33,8 +37,8 @@ object ImporterViewModel {
     }
 
     var onLoginChanged: (username: String, password: String)-> Unit = { username, password ->
-        this.username = username
-        this.password = password
+        this.xrayClientID = username
+        this.xrayClientSecret = password
     }
 
     val onLoginClick: () -> Unit = {
@@ -85,7 +89,7 @@ object ImporterViewModel {
     }
 
     fun isLoginButtonEnabled(): Boolean{
-        return (username.isNotEmpty() && password.isNotEmpty() && appState==AppState.DEFAULT)
+        return (xrayClientID.isNotEmpty() && xrayClientSecret.isNotEmpty() && appState==AppState.DEFAULT)
     }
 
     fun isLogoutButtonEnabled(): Boolean{
@@ -129,17 +133,17 @@ object ImporterViewModel {
     fun logIn() = GlobalScope.launch {
         launch {
             delay(1000L)
-            if (logInOnXRay(username,password) == HttpStatusCode(200,"OK")){
+            if (logInOnXRay(xrayClientID,xrayClientSecret) == HttpStatusCode(200,"OK")){
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 loginState = LoginState.LOGGED_IN
-                password=""
+                xrayClientSecret=""
             }else{
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 // TODO This is not working. Works with LoginState.LOGGED_OUT.
                 loginState = LoginState.ERROR
-                password=""
+                xrayClientSecret=""
             }
         }
     }
