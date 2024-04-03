@@ -28,7 +28,6 @@ fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
             }
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colors.primary).verticalScroll(rememberScrollState())) {
                 ImporterViewModel.featureFiles.forEach { file ->
-                    // If file was already imported
                     Surface(
                         Modifier.fillMaxWidth(),
                         color = if (file.isImported) Color.Green else if (file.isError) MaterialTheme.colors.error else MaterialTheme.colors.background
