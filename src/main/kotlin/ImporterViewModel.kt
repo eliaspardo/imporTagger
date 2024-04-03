@@ -13,7 +13,7 @@ object ImporterViewModel {
         private set
     var xrayClientSecret by mutableStateOf("")
         private set
-    var percentageImported by mutableStateOf(0f)
+    var percentageProcessed by mutableStateOf(0f)
         private set
     var isLoggingIn by mutableStateOf(false)
         private set
@@ -32,8 +32,7 @@ object ImporterViewModel {
     // Lambda callback functions for the UI
     val onImportClick: () -> Unit = {
         appState=AppState.IMPORTING
-        recalculatePercentageImported()
-        startImport()
+        importXRayTests()
     }
 
     var onLoginChanged: (username: String, password: String)-> Unit = { username, password ->
@@ -117,8 +116,8 @@ object ImporterViewModel {
         featureFiles.add(file)
     }
 
-    fun recalculatePercentageImported(){
-        percentageImported = getFilesImported()/getFilesToImport().toFloat()
+    fun calculatePercentageProcessed(){
+        percentageProcessed = percentageProcessed+(1/getFilesToImport().toFloat())
     }
 
     fun addFilesToList(files: Array<java.io.File>){
@@ -157,17 +156,16 @@ object ImporterViewModel {
         }
     }
 
-    fun startImport() = GlobalScope.launch {
+    fun importXRayTests() = GlobalScope.launch {
         launch {
-            while(percentageImported<=1.0f){
-                println(percentageImported)
-                percentageImported+=0.1f
-                delay(250L)
-                // Modify file to become disabled after imported - Testing purposes
-                featureFiles.map{ file-> if(file.isChecked){file.isImported=true}}
-                // Uncheck imported files
-                featureFiles.map{ file-> if(file.isImported){file.isChecked=false}}
-            }
+            percentageProcessed = 0f
+            featureFiles.map{ file-> if(file.isChecked){
+                file.import();
+                calculatePercentageProcessed();
+                if(file.isImported){file.isChecked=false}else{
+                    file.isError=true
+                }
+            }}
             appState = AppState.DEFAULT
         }
     }

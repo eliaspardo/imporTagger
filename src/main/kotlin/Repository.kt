@@ -27,7 +27,7 @@ suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatu
     return response.status
 }
 
-suspend fun importFileToXray(): HttpStatusCode {
+suspend fun importFileToXray(path: String): HttpStatusCode {
     val client = HttpClient(CIO)
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
         header("Authorization", "Bearer "+loginToken)

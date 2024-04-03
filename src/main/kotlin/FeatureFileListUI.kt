@@ -4,6 +4,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,15 +31,20 @@ fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
                     // If file was already imported
                     Surface(
                         Modifier.fillMaxWidth(),
-                        color = if (file.isImported) Color.LightGray else MaterialTheme.colors.background
+                        color = if (file.isImported) Color.Green else if (file.isError) MaterialTheme.colors.error else MaterialTheme.colors.background
                     ) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = file.isChecked,
-                                onCheckedChange = file.onCheckedChange,
-                                Modifier.width(60.dp),
-                                enabled = file.isEnabled()
-                            )
+
+                            if(file.isEnabled()){
+                                Checkbox(
+                                    checked = file.isChecked,
+                                    onCheckedChange = file.onCheckedChange,
+                                    Modifier.width(60.dp),
+                                    enabled = file.isEnabled()
+                                )
+                            }else{
+                                Icon(Icons.Default.Check, "File imported successfully!", modifier = Modifier.width(60.dp))
+                            }
                             Text(file.name, Modifier.width(125.dp))
                             Text(file.path, Modifier.width(300.dp))
                             IconButton(

@@ -2,7 +2,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import kotlinx.coroutines.*
 
 @Composable
 fun ImportButton(onImportClick: () -> () -> Unit) {
@@ -11,6 +10,6 @@ fun ImportButton(onImportClick: () -> () -> Unit) {
             Text("Import")
         }
     }else {
-        LinearProgressIndicator(progress = ImporterViewModel.percentageImported)
+        LinearProgressIndicator(progress = ImporterViewModel.percentageProcessed)
     }
 }
