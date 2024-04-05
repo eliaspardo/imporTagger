@@ -29,6 +29,7 @@ fun SingleFileDialog(
 
 @Composable
 fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: Array<File>) -> Unit) {
+    // TODO - If user cancels operation, closing window, app is in wrong state
     Button(
         onClick = onTestInfoFileChooserClick,
         enabled = ImporterViewModel.isFileChooserButtonEnabled(),

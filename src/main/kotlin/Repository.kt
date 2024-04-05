@@ -25,7 +25,8 @@ suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatu
     loginResponseCode = response.status.value
     loginResponseMessage = response.status.description
     loginToken = response.body()
-    println(response.status)
+    // Remove double quotes from token
+    loginToken = loginToken.replace("\"", "")
     client.close()
     return response.status
 }
