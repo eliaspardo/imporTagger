@@ -11,12 +11,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginBox(
     onLoginChanged: (username: String, password:String) -> Unit,
@@ -31,17 +36,36 @@ fun LoginBox(
             verticalAlignment = Alignment.CenterVertically
         ) {
             //Text(text = "XRay Login", fontSize = 25.sp)
+            val focusManager = LocalFocusManager.current
             OutlinedTextField(
                 value = ImporterViewModel.xrayClientID,
                 onValueChange = { onLoginChanged(it, ImporterViewModel.xrayClientSecret) },
                 label = { Text("XRay Client ID") },
                 modifier = Modifier.padding(5.dp)
+                .onKeyEvent {
+                    if (it.key == Key.Tab) {
+                        focusManager.moveFocus(FocusDirection.Next)
+                        // TODO Tab goes to next field, but writes tab, removing it here, not very elegant
+                        onLoginChanged(ImporterViewModel.xrayClientID.substring(0, ImporterViewModel.xrayClientID.length - 1), ImporterViewModel.xrayClientSecret)
+                        true
+                    } else {
+                        false
+                    }
+                }
             )
             OutlinedTextField(
                 value = ImporterViewModel.xrayClientSecret,
                 onValueChange = { onLoginChanged(ImporterViewModel.xrayClientID, it) },
                 label = { Text("XRay Client Secret") },
-                modifier = Modifier.padding(5.dp),
+                modifier = Modifier.padding(5.dp)
+                .onKeyEvent {
+                    if (it.key == Key.Tab) {
+                        focusManager.moveFocus(FocusDirection.Next)
+                        true
+                    } else {
+                        false
+                    }
+                },
                 visualTransformation =
                 if (isClientSecretVisible) {
                     VisualTransformation.None

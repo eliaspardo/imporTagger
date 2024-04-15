@@ -7,6 +7,8 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -35,23 +37,32 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
     val client = HttpClient (CIO){
         install(Logging){
             logger = Logger.DEFAULT
-            level = LogLevel.HEADERS
+            level = LogLevel.ALL
+        }
+        install(Auth){
+            bearer{
+               loadTokens {
+                   BearerTokens(loginToken,"")
+               }
+            }
         }
     }
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
-        header("Authorization", "Bearer "+loginToken)
-        contentType(ContentType.MultiPart.FormData)
-        setBody("")
-        formData {
-            append("file", java.io.File(path).readBytes(), Headers.build {
-                append(HttpHeaders.ContentType, "application/json")
-                append(HttpHeaders.ContentDisposition, "filename=\"ktor_logo.png\"")
-            })
-            append("testInfo", java.io.File(ImporterViewModel.testInfoFiles.get(0).absolutePath).readBytes(), Headers.build {
-                append(HttpHeaders.ContentType, "application/json")
-                append(HttpHeaders.ContentDisposition, "filename=\"ktor_logo.png\"")
-            })
-        }
+        //contentType(ContentType.MultiPart.FormData)
+        //setBody("")
+        setBody(
+            MultiPartFormDataContent(
+                formData {
+                    append("file", java.io.File(path).readBytes(), Headers.build {
+                        append(HttpHeaders.ContentType, "application/json")
+                    })
+                    append("testInfo", java.io.File(ImporterViewModel.testInfoFiles.get(0).absolutePath).readBytes(), Headers.build {
+                        append(HttpHeaders.ContentType, "application/json")
+                    })
+                },
+                boundary="boundary"
+            )
+        )
         onUpload { bytesSentTotal, contentLength ->
             println("Sent $bytesSentTotal bytes from $contentLength")
         }
