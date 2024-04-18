@@ -54,10 +54,12 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
             MultiPartFormDataContent(
                 formData {
                     append("file", java.io.File(path).readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "application/json")
+                        append(HttpHeaders.ContentType, "application/octet-stream")
+                        append(HttpHeaders.ContentDisposition,"filename="+java.io.File(path))
                     })
                     append("testInfo", java.io.File(ImporterViewModel.testInfoFiles.get(0).absolutePath).readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "application/json")
+                        append(HttpHeaders.ContentType, "application/octet-stream")
+                        append(HttpHeaders.ContentDisposition,"filename="+java.io.File(ImporterViewModel.testInfoFiles.get(0).absolutePath))
                     })
                 },
                 boundary="boundary"

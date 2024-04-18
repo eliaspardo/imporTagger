@@ -50,7 +50,8 @@ fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
                                 onClick = { onRemoveFile(file) },
                                 Modifier.width(60.dp)
                             ) {
-                                Icon(Icons.Default.Delete, "Remove file")
+                                // TODO Think if we need this
+                                if (!file.isImported) Icon(Icons.Default.Delete, "Remove file")
                             }
                         }
                     }
