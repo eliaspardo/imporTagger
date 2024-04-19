@@ -57,9 +57,9 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
                         append(HttpHeaders.ContentType, "application/octet-stream")
                         append(HttpHeaders.ContentDisposition,"filename="+java.io.File(path))
                     })
-                    append("testInfo", java.io.File(ImporterViewModel.testInfoFiles.get(0).absolutePath).readBytes(), Headers.build {
+                    append("testInfo", java.io.File(ImporterViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
                         append(HttpHeaders.ContentType, "application/octet-stream")
-                        append(HttpHeaders.ContentDisposition,"filename="+java.io.File(ImporterViewModel.testInfoFiles.get(0).absolutePath))
+                        append(HttpHeaders.ContentDisposition,"filename="+ImporterViewModel.testInfoFile.value)
                     })
                 },
                 boundary="boundary"

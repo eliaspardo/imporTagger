@@ -23,8 +23,8 @@ fun main() = application {
                 FeatureFileChooserUI(ImporterViewModel.onFeatureFileChooserClick, ImporterViewModel.onFeatureFileChooserClose)
                 TestInfoFileChooserUI(ImporterViewModel.onTestInfoFileChooserClick, ImporterViewModel.onTestInfoFileChooserClose)
             }
-            if(ImporterViewModel.testInfoFiles.size>0){
-                Text(text = "TestInfo.json: "+ImporterViewModel.testInfoFiles.get(0).name)
+            if(ImporterViewModel.testInfoFile.value!=null){
+                Text(text = "TestInfo.json: "+ImporterViewModel.testInfoFile.value)
             }
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {
                 ImportButton { ImporterViewModel.onImportClick }

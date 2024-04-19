@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 object ImporterViewModel {
     var featureFiles = mutableStateListOf<File>()
         private set
-    var testInfoFiles = mutableStateListOf<java.io.File>()
+    var testInfoFile = mutableStateOf<java.io.File?>(null)
         private set
     var xrayClientID by mutableStateOf("")
         private set
@@ -67,10 +67,9 @@ object ImporterViewModel {
         appState = AppState.DEFAULT
     }
 
-    val onTestInfoFileChooserClose: (result: Array<java.io.File>?) -> Unit ={ file->
-        // Remove existing file
+    val onTestInfoFileChooserClose: (result: java.io.File?) -> Unit ={ file->
         if(file!=null){
-            this.testInfoFiles.add(file.get(0))
+            this.testInfoFile.value = file
         }
         appState = AppState.DEFAULT
     }

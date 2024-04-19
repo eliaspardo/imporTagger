@@ -12,14 +12,16 @@ import java.io.File
 @Composable
 fun SingleFileDialog(
     parent: Frame? = null,
-    onCloseRequest: (result: Array<File>?) -> Unit
+    onCloseRequest: (result: File?) -> Unit
 ) = AwtWindow(
     create = {
         object : FileDialog(parent, "Choose a TestInfo.json file", LOAD) {
             override fun setVisible(value: Boolean) {
                 super.setVisible(value)
                 if (value) {
-                    onCloseRequest(files)
+                    if (files.size!=0) {onCloseRequest(files.get(0))}
+                    else{ImporterViewModel.testInfoFile.value=null}
+                    //else{onCloseRequest(null)}
                 }
             }
         }
@@ -28,7 +30,7 @@ fun SingleFileDialog(
 )
 
 @Composable
-fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: Array<File>) -> Unit) {
+fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: File) -> Unit) {
     // TODO - If user cancels operation, closing window, app is in wrong state
     Button(
         onClick = onTestInfoFileChooserClick,
