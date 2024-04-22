@@ -20,8 +20,7 @@ fun SingleFileDialog(
                 super.setVisible(value)
                 if (value) {
                     if (files.size!=0) {onCloseRequest(files.get(0))}
-                    else{ImporterViewModel.testInfoFile.value=null}
-                    //else{onCloseRequest(null)}
+                    else{onCloseRequest(null)}
                 }
             }
         }
@@ -30,8 +29,7 @@ fun SingleFileDialog(
 )
 
 @Composable
-fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: File) -> Unit) {
-    // TODO - If user cancels operation, closing window, app is in wrong state
+fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: File?) -> Unit) {
     Button(
         onClick = onTestInfoFileChooserClick,
         enabled = ImporterViewModel.isFileChooserButtonEnabled(),
@@ -41,7 +39,7 @@ fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFile
     if(ImporterViewModel.appState==AppState.TEST_INFO_FILE_DIALOG_OPEN) {
         SingleFileDialog(
             onCloseRequest = { file ->
-                onTestInfoFileChooserClose(file!!)
+                onTestInfoFileChooserClose(file)
             }
         )
     }

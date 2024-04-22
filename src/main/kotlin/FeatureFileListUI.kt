@@ -42,6 +42,7 @@ fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
                                     enabled = file.isEnabled()
                                 )
                             }else{
+                                // TODO This is setting invalid files (not .feature) to check, when it should be a cross
                                 Icon(Icons.Default.Check, "File imported successfully!", modifier = Modifier.width(60.dp))
                             }
                             Text(file.name, Modifier.width(125.dp))

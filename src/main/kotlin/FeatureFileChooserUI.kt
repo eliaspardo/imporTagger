@@ -29,7 +29,7 @@ fun MultipleFileDialog(
 )
 
 @Composable
-fun FeatureFileChooserUI(onFeatureFileChooserClick: () -> Unit, onFeatureFileChooserClose: (result: Array<File>) -> Unit) {
+fun FeatureFileChooserUI(onFeatureFileChooserClick: () -> Unit, onFeatureFileChooserClose: (result: Array<File>?) -> Unit) {
     Button(
         onClick = onFeatureFileChooserClick,
         enabled = ImporterViewModel.isFileChooserButtonEnabled(),
@@ -39,7 +39,7 @@ fun FeatureFileChooserUI(onFeatureFileChooserClick: () -> Unit, onFeatureFileCho
     if(ImporterViewModel.appState==AppState.FEATURE_FILE_DIALOG_OPEN) {
         MultipleFileDialog(
             onCloseRequest = { file ->
-                onFeatureFileChooserClose(file!!)
+                onFeatureFileChooserClose(file)
             }
         )
     }
