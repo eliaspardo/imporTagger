@@ -6,7 +6,8 @@ plugins {
     kotlin("jvm") version "1.6.10"
     //kotlin("jvm") version "1.8.10"
     //kotlin("jvm") version "1.9.10"
-    id("org.jetbrains.compose") version "1.1.0"
+    //id("org.jetbrains.compose") version "1.1.0"
+    id("org.jetbrains.compose") version "1.1.1"
 }
 
 group = "me.elias"
@@ -39,7 +40,8 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+    //kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "16"
 }
 
 compose.desktop {
@@ -54,9 +56,11 @@ compose.desktop {
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    //jvmTarget = "1.8"
+    jvmTarget = "16"
 }
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    //jvmTarget = "1.8"
+    jvmTarget = "16"
 }

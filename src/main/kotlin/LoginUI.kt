@@ -45,6 +45,7 @@ fun LoginBox(
                 .onKeyEvent {
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
+                        // TODO Theres some kind of error when Alt+Tab - "AWT-EventQueue-0" java.lang.StringIndexOutOfBoundsException: begin 0, end -1, length 0
                         // TODO Tab goes to next field, but writes tab, removing it here, not very elegant
                         onLoginChanged(ImporterViewModel.xrayClientID.substring(0, ImporterViewModel.xrayClientID.length - 1), ImporterViewModel.xrayClientSecret)
                         true
