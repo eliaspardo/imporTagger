@@ -16,23 +16,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 
 suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatusCode {
-    if((xrayClientID.equals("test")&&xrayClientSecret.equals("test"))){
-        val client = HttpClient(CIO)
-        val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate"){
-            contentType(ContentType.Application.Json)
-            setBody("{\n" +
-                    "    \"client_id\": \"C419478A740F4662B0884FF02AFDDA82\",\n" +
-                    "    \"client_secret\": \"73515d32e58eceb7e3a24adcd13c902950fb20359c505db19a9ffc4913736357\"\n" +
-                    "}")
-        }
-        loginResponseCode= response.status.value
-        loginResponseMessage= response.status.description
-        loginToken = response.body()
-        // Remove double quotes from token
-        loginToken = loginToken.replace("\"", "")
-        client.close()
-        return response.status
-    }
     val client = HttpClient(CIO)
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
         contentType(ContentType.Application.Json)
