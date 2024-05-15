@@ -5,6 +5,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,8 +42,16 @@ fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
                                     Modifier.width(60.dp),
                                     enabled = file.isEnabled()
                                 )
+                            }else if(file.isFeatureFile()==false){
+                                Icon(Icons.Default.Close, "Not a feature file!", modifier = Modifier.width(60.dp))
+                            }else if(ImporterViewModel.maxFilesCheckedReached()){
+                                Checkbox(
+                                    checked = false,
+                                    onCheckedChange = null,
+                                    Modifier.width(60.dp),
+                                    enabled = false
+                                )
                             }else{
-                                // TODO This is setting invalid files (not .feature) to check, when it should be a cross
                                 Icon(Icons.Default.Check, "File imported successfully!", modifier = Modifier.width(60.dp))
                             }
                             Text(file.name, Modifier.width(125.dp))

@@ -11,7 +11,8 @@ data class File(val name: String, val path: String, ) {
         if(isImported){
             return false
         }
-        if (!name.substringAfterLast('.', "").equals("feature")) {
+        // TODO not sure if this is needed
+        if (!isFeatureFile()) {
             return false
         }
         if(ImporterViewModel.maxFilesCheckedReached()&&!isChecked){
@@ -20,6 +21,10 @@ data class File(val name: String, val path: String, ) {
             return false
         }
         return true
+    }
+
+    fun isFeatureFile(): Boolean {
+        return name.substringAfterLast('.', "").equals("feature")
     }
 
     // TODO Review
