@@ -7,6 +7,7 @@ data class File(val name: String, val path: String, ) {
     var isChecked by mutableStateOf(false)
     var isImported by mutableStateOf(false)
     var isError by mutableStateOf(false)
+
     fun isEnabled(): Boolean {
         if(isImported){
             return false

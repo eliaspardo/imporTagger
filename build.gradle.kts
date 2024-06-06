@@ -8,6 +8,11 @@ plugins {
     //kotlin("jvm") version "1.9.10"
     //id("org.jetbrains.compose") version "1.1.0"
     id("org.jetbrains.compose") version "1.1.1"
+    kotlin("plugin.serialization").version("1.9.10")
+    //kotlin("plugin.serialization") version "2.0.0"
+    //id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
+
+
 }
 
 group = "me.elias"
@@ -25,13 +30,14 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation(compose.desktop.currentOs)
     implementation(compose.materialIconsExtended)
-    //implementation("cafe.adriel.voyager:voyager-navigator:1.0.0-rc06")
-    //implementation("com.darkrockstudios:mpfilepicker:2.0.2")
     implementation(kotlin("stdlib-jdk8"))
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-logging:$ktor_version")
     implementation("io.ktor:ktor-client-auth:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("ch.qos.logback:logback-classic:1.5.3")
 }
 
