@@ -8,11 +8,8 @@ plugins {
     //kotlin("jvm") version "1.9.10"
     //id("org.jetbrains.compose") version "1.1.0"
     id("org.jetbrains.compose") version "1.1.1"
-    kotlin("plugin.serialization").version("1.9.10")
-    //kotlin("plugin.serialization") version "2.0.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.6.0"
     //id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
-
-
 }
 
 group = "me.elias"

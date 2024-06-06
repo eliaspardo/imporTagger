@@ -9,13 +9,33 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 
 suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatusCode {
+    if((xrayClientID.equals("test")&&xrayClientSecret.equals("test"))){
+        val client = HttpClient(CIO)
+        val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate"){
+            contentType(ContentType.Application.Json)
+            setBody("{\n" +
+                    "    \"client_id\": \"C419478A740F4662B0884FF02AFDDA82\",\n" +
+                    "    \"client_secret\": \"73515d32e58eceb7e3a24adcd13c902950fb20359c505db19a9ffc4913736357\"\n" +
+                    "}")
+        }
+        loginResponseCode= response.status.value
+        loginResponseMessage= response.status.description
+        loginToken = response.body()
+        // Remove double quotes from token
+        loginToken = loginToken.replace("\"", "")
+        client.close()
+        return response.status
+    }
     val client = HttpClient(CIO)
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
         contentType(ContentType.Application.Json)
@@ -46,6 +66,12 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
                }
             }
         }
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                isLenient = true
+            })
+        }
     }
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
         //contentType(ContentType.MultiPart.FormData)
@@ -72,6 +98,23 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
     importResponseCode = response.status.value
     importResponseMessage = response.status.description
     println(response.status)
+
+    val importResponse: ImportResponse = response.body()
+
+    println(importResponseCode)
+    println(importResponseMessage)
+    println(importResponse.toString())
+
+
+    // TODO Continue parsing response body
+    if(!importResponse.errors.isEmpty()){
+        println("There are errors")
+        println(importResponse.errors.toString())
+    }
+    else{
+        println("There are no errors")
+    }
+
     client.close()
     return response.status
 }
