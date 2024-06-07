@@ -1,3 +1,4 @@
+import ImporterViewModel.importResponseBody
 import ImporterViewModel.importResponseCode
 import ImporterViewModel.importResponseMessage
 import ImporterViewModel.loginResponseCode
@@ -17,6 +18,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 
 suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatusCode {
     val client = HttpClient(CIO)
@@ -57,8 +59,7 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
         }
     }
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
-        //contentType(ContentType.MultiPart.FormData)
-        //setBody("")
+
         setBody(
             MultiPartFormDataContent(
                 formData {
@@ -78,21 +79,20 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
             println("Sent $bytesSentTotal bytes from $contentLength")
         }
     }
+
     importResponseCode = response.status.value
     importResponseMessage = response.status.description
-    println(response.status)
-
-    val importResponse: ImportResponse = response.body()
+    importResponseBody = response.body()
 
     println(importResponseCode)
     println(importResponseMessage)
-    println(importResponse.toString())
+    println(importResponseBody.toString())
 
 
     // TODO Continue parsing response body
-    if(!importResponse.errors.isEmpty()){
+    if(!importResponseBody.errors.isEmpty()){
         println("There are errors")
-        println(importResponse.errors.toString())
+        println(importResponseBody.errors.toString())
     }
     else{
         println("There are no errors")

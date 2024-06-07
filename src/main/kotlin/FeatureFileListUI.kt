@@ -1,3 +1,4 @@
+import ImporterViewModel.importResponseBody
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -71,6 +72,12 @@ fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
         if(ImporterViewModel.maxFilesCheckedReached()){
             scope.launch {
                 scaffoldState.snackbarHostState.showSnackbar("Max no. of files to import reached: 10")
+            }
+        }
+        // TODO For some reason this is triggering the notification twice
+        if(!importResponseBody.errors.isEmpty()){
+            scope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(importResponseBody.errors.toString())
             }
         }
     }

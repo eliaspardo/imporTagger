@@ -28,7 +28,8 @@ object ImporterViewModel {
 
     var importResponseCode by mutableStateOf(404)
     var importResponseMessage by mutableStateOf("")
-    //var importResponseBody by mutableStateOf<ImportResponse>(null)
+    //var initialResponseBody = ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList())
+    var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
 
     // Lambda callback functions for the UI
     val onImportClick: () -> Unit = {
