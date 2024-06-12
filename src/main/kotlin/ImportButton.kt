@@ -6,14 +6,13 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun ImportButton(onImportClick: () -> () -> Unit) {
-    // TODO - Button becomes enabled even if no Test Info file is selected
     if(ImporterViewModel.appState!=AppState.IMPORTING) {
         Button(onClick = onImportClick(), enabled = ImporterViewModel.isImportButtonEnabled()) {
             Text("Import")
         }
-        if(!importResponseBody.errors.isEmpty()){
+        /*if(!importResponseBody.errors.isEmpty()){
             Text(importResponseBody.errors.toString())
-        }
+        }*/
     }else {
         LinearProgressIndicator(progress = ImporterViewModel.percentageProcessed)
     }
