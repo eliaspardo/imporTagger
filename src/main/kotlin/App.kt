@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer") {
+    val icon = painterResource("icon.png")
+    Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
         Column(Modifier.fillMaxWidth(), Arrangement.Center) {
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {
                 XRayLoginBox(
