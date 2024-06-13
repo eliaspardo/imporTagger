@@ -1,5 +1,4 @@
 import kotlinx.serialization.Serializable
-import java.net.URL
 
 @Serializable
 data class ImportResponse(val errors: List <String>, val updatedOrCreatedTests: List<Test>, val updatedOrCreatedPreconditions: List<Precondition>)
