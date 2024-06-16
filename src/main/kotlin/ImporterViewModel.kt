@@ -162,6 +162,10 @@ object ImporterViewModel {
             percentageProcessed = 0f
             featureFiles.map{ file-> if(file.isChecked){
                 file.import();
+                // TODO Tagging needs to happen here, so we have a reference to the file the test is coming from
+                // TODO This process needs to be done per each test case/precondition in each file, so the loop can get quite complex
+                // for test in importResponseBody.updatedOrCreatedTests
+                //
                 calculatePercentageProcessed();
                 if(file.isImported){file.isChecked=false}else{
                     file.isError=true

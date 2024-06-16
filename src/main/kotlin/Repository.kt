@@ -20,7 +20,6 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.util.zip.ZipFile
 
 suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatusCode {
     val client = HttpClient(CIO)
@@ -99,7 +98,7 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
     return response.status
 }
 
-suspend fun downloadCucumberTestsFromXRay(): File {
+suspend fun downloadCucumberTestsFromXRay(testID: String): File {
     val client = HttpClient(CIO) {
         install(Logging) {
             logger = Logger.DEFAULT
@@ -121,7 +120,7 @@ suspend fun downloadCucumberTestsFromXRay(): File {
     }
     val file = File.createTempFile("xrayImporter", ".zip")
     runBlocking {
-        val httpResponse: HttpResponse = client.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=TEST-2806") {
+        val httpResponse: HttpResponse = client.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys="+testID) {
             onDownload { bytesSentTotal, contentLength ->
                 println("Received $bytesSentTotal bytes from $contentLength")
             }
@@ -136,22 +135,20 @@ suspend fun downloadCucumberTestsFromXRay(): File {
     return file.absoluteFile
 }
 
-fun unzipFile(file:File){
-    ZipFile(file).use { zip ->
-        zip.entries().asSequence().forEach { entry ->
-            zip.getInputStream(entry).use { input ->
-                File(file.absolutePath+entry.name).outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-        }
-    }
-}
-// TODO for test purposes only
+
+// TODO This is what we need to call to tag tests into featureFiles.
+// TODO This process needs to be done per each test case/precondition in each file, so the loop can get quite complex.
+// TODO We might run into race conditions if we do this too quickly after importing - tests might not yet be available on the API
 suspend fun main(args: Array<String>) {
-    logInOnXRay();
-    var file = downloadCucumberTestsFromXRay()
-    unzipFile(file)
-    // TODO Remove ZIP files and extracted files
+    val fileManager = FileManager()
+    logInOnXRay("","");
+    // We need to keep track of which file the test is coming from so it can be tagged accordingly
+    var zipFile = downloadCucumberTestsFromXRay("TEST-2806")
+    val unzippedTestFile = fileManager.unzipFile(zipFile)
+    fileManager.deleteFile(zipFile)
+    // TODO Parse file, get Scenario name, tag FeatureFile
+    // val scenario = getScenario(unzippedTestFile)
+    // tagTest(scenario, file)
+    fileManager.deleteFile(File(unzippedTestFile))
 }
 
