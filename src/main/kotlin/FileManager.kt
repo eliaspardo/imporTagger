@@ -1,8 +1,8 @@
+import java.io.BufferedReader
 import java.io.File
 import java.util.zip.ZipFile
 
 class FileManager {
-    // TODO This should return a list of files
     fun unzipFile(file: File) : String{
         ZipFile(file).use { zip ->
             zip.entries().asSequence().forEach { entry ->

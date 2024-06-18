@@ -140,15 +140,25 @@ suspend fun downloadCucumberTestsFromXRay(testID: String): File {
 // TODO This process needs to be done per each test case/precondition in each file, so the loop can get quite complex.
 // TODO We might run into race conditions if we do this too quickly after importing - tests might not yet be available on the API
 suspend fun main(args: Array<String>) {
+    val testID = "TEST-2806"
     val fileManager = FileManager()
+    val xRayTagger = XRayTagger()
+    val featureFile = "file.feature"
     logInOnXRay("","");
-    // We need to keep track of which file the test is coming from so it can be tagged accordingly
-    var zipFile = downloadCucumberTestsFromXRay("TEST-2806")
-    val unzippedTestFile = fileManager.unzipFile(zipFile)
-    fileManager.deleteFile(zipFile)
-    // TODO Parse file, get Scenario name, tag FeatureFile
-    // val scenario = getScenario(unzippedTestFile)
-    // tagTest(scenario, file)
-    fileManager.deleteFile(File(unzippedTestFile))
+
+    // Check if feature file is already tagged, if not, start tagging process
+    if(!xRayTagger.checkIfFileIsTagged(File(featureFile),testID)){
+        // Download zip file to know which scenario needs tagging
+        var zipFile = downloadCucumberTestsFromXRay(testID)
+        val unzippedTestFile = fileManager.unzipFile(zipFile)
+        fileManager.deleteFile(zipFile)
+
+        // Get Scenario from extracted file
+        val scenario = xRayTagger.getScenario(File(unzippedTestFile))
+        fileManager.deleteFile(File(unzippedTestFile))
+
+        // TODO Tag FeatureFile
+        xRayTagger.tagTest(scenario,testID,File(featureFile))
+    }
 }
 
