@@ -143,11 +143,13 @@ suspend fun main(args: Array<String>) {
     val testID = "TEST-2806"
     val fileManager = FileManager()
     val xRayTagger = XRayTagger()
-    val featureFile = "file.feature"
+    // This file matches the TEST-2806 scenario, but not tagged
+    val featureFile = "fileTEST-2806WithoutTag.feature"
     logInOnXRay("","");
 
     // Check if feature file is already tagged, if not, start tagging process
     if(!xRayTagger.checkIfFileIsTagged(File(featureFile),testID)){
+        println("File is not tagged")
         // Download zip file to know which scenario needs tagging
         var zipFile = downloadCucumberTestsFromXRay(testID)
         val unzippedTestFile = fileManager.unzipFile(zipFile)
