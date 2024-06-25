@@ -59,7 +59,7 @@ class XRayTagger {
     }
 
 
-    fun checkIfFileIsTagged(featureFile: File, testID:String):Boolean{
+    fun isFileTagged(featureFile: File, testID:String):Boolean{
         val bufferedReader: BufferedReader = featureFile.bufferedReader()
         val inputString = bufferedReader.use { it.readText() }
         return inputString.contains(testID)

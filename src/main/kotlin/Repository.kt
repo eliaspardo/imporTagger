@@ -148,7 +148,7 @@ suspend fun main(args: Array<String>) {
     logInOnXRay("","");
 
     // Check if feature file is already tagged, if not, start tagging process
-    if(!xRayTagger.checkIfFileIsTagged(File(featureFile),testID)){
+    if(!xRayTagger.isFileTagged(File(featureFile),testID)){
         println("File is not tagged")
         // Download zip file to know which scenario needs tagging
         var zipFile = downloadCucumberTestsFromXRay(testID)

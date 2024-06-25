@@ -25,6 +25,9 @@ val ktor_version: String by project
 
 dependencies {
     testImplementation(kotlin("test"))
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+
     implementation(compose.desktop.currentOs)
     implementation(compose.materialIconsExtended)
     implementation(kotlin("stdlib-jdk8"))
@@ -39,7 +42,8 @@ dependencies {
 }
 
 tasks.test {
-    useTestNG()
+    //useTestNG()
+    useJUnitPlatform()
 }
 
 tasks.withType<KotlinCompile> {
