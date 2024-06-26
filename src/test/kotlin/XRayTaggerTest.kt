@@ -9,11 +9,13 @@ import kotlin.test.assertTrue
 
 internal class XRayTaggerTest{
     lateinit var xRayTagger:XRayTagger;
+    lateinit var fileManager:FileManager;
 
 
     @BeforeTest
     fun setup(){
         xRayTagger = XRayTagger()
+        fileManager = FileManager();
     }
 
     companion object {
@@ -62,7 +64,8 @@ internal class XRayTaggerTest{
     @ParameterizedTest
     @MethodSource("featureFilesTestTag")
     fun testIsFileTagged(featureFile: String, testID:String, isTagged: Boolean){
-        assertEquals(isTagged,xRayTagger.isFileTagged(File(featureFile),testID));
+        val featureFileLines = fileManager.readFile(featureFile)
+        assertEquals(isTagged,xRayTagger.isFileTagged(featureFileLines,testID));
     }
 
     @ParameterizedTest
@@ -87,9 +90,9 @@ internal class XRayTaggerTest{
     @ParameterizedTest
     @MethodSource("featureFilesAddTag")
     fun testAddTag(scenarioLine:Int, testID: String, featureFile: String, isPreviousLineTagged: Boolean){
-        val outputPath = xRayTagger.addTag(scenarioLine,testID,File(featureFile),isPreviousLineTagged);
-        assertTrue(xRayTagger.isFileTagged(File(outputPath),testID))
-        val fileManager = FileManager();
+        val featureFileLines = fileManager.readFile(featureFile)
+        val outputPath = xRayTagger.addTag(scenarioLine,testID,File(featureFile),isPreviousLineTagged,featureFileLines);
+        assertTrue(xRayTagger.isFileTagged(featureFileLines,testID))
         fileManager.deleteFile(File(outputPath));
     }
 }

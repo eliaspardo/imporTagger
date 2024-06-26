@@ -2,14 +2,15 @@ import java.io.BufferedReader
 import java.io.File
 
 class XRayTagger {
-    fun tagTest(scenario: String, testID: String, featureFile: File) : Boolean {
+    fun tagTest(scenario: String, testID: String, featureFile: File, featureFileLines: MutableList<String>) : Boolean {
         // TODO Parse Feature File looking for Scenario. Get line number.
         var scenarioLine = findLineWhereScenario(scenario,featureFile);
         var isPreviousLineTagged = checkIfPreviousLineIsTagged(scenarioLine, featureFile);
         println(scenarioLine);
         println(isPreviousLineTagged);
         // TODO Read line above Scenario: if line exist, append, if blank, newline.
-        addTag(scenarioLine,testID,featureFile,isPreviousLineTagged);
+        val outputPath = addTag(scenarioLine,testID,featureFile,isPreviousLineTagged,featureFileLines);
+        println(outputPath);
         return true
     }
 
@@ -48,30 +49,25 @@ class XRayTagger {
         return false;
     }
 
-    fun addTag(scenarioLine:Int, testID: String, featureFile: File, isPreviousLineTagged:Boolean):String{
-        val lines = readFile(featureFile.absolutePath)
+    fun addTag(scenarioLine:Int, testID: String, featureFile: File, isPreviousLineTagged:Boolean,featureFileLines: MutableList<String>):String{
         val outputPath = featureFile.absolutePath+"test"
 
         if(isPreviousLineTagged){
             // Append to scenarioLine-1
             println("Adding tag to existing tags");
-            appendToLine(lines,scenarioLine-1," @"+testID);
+            appendToLine(featureFileLines,scenarioLine-1,formatTestTag(testID));
         }else{
             // Add newLine in scenario Line
             println("Adding new line with tag");
-            addNewLine(lines,scenarioLine-1,"    @"+testID);
+            addNewLine(featureFileLines,scenarioLine-1,formatTestTag(testID));
         }
-        writeFile(featureFile.absolutePath+"test", lines)
+        writeFile(featureFile.absolutePath+"test", featureFileLines)
         return outputPath
-    }
-
-    fun readFile(filePath: String): MutableList<String> {
-        return File(filePath).readLines().toMutableList()
     }
 
     fun addNewLine(lines: MutableList<String>, lineIndex: Int, tag: String) {
         if (lineIndex in lines.indices) {
-            lines[lineIndex] = "\n"+tag+"\n"+lines[lineIndex]
+            lines[lineIndex] = "\n    "+tag+"\n"+lines[lineIndex]
         } else {
             throw IndexOutOfBoundsException("Line index $lineIndex is out of bounds.")
         }
@@ -79,10 +75,14 @@ class XRayTagger {
 
     fun appendToLine(lines: MutableList<String>, lineIndex: Int, tag: String) {
         if (lineIndex in lines.indices) {
-            lines[lineIndex-1] = lines[lineIndex-1]+tag
+            lines[lineIndex-1] = lines[lineIndex-1]+" "+tag
         } else {
             throw IndexOutOfBoundsException("Line index $lineIndex is out of bounds.")
         }
+    }
+
+    fun formatTestTag(tag: String):String{
+        return "@TEST_"+tag;
     }
 
     fun writeFile(filePath: String, lines: List<String>) {
@@ -94,10 +94,9 @@ class XRayTagger {
     }
 
 
-    fun isFileTagged(featureFile: File, testID:String):Boolean{
-        val bufferedReader: BufferedReader = featureFile.bufferedReader()
-        val inputString = bufferedReader.use { it.readText() }
-        return inputString.contains(testID)
+    fun isFileTagged(featureFileLines: List<String>, testID:String):Boolean{
+        println("Checking if file tagged: "+formatTestTag(testID))
+        return featureFileLines.filter{line->line.contains(formatTestTag(testID))}.isNotEmpty();
     }
 
 
