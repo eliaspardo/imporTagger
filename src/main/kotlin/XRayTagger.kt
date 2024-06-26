@@ -48,13 +48,48 @@ class XRayTagger {
         return false;
     }
 
-    fun addTag(scenarioLine:Int, testID: String, featureFile: File, isPreviousLineTagged:Boolean){
+    fun addTag(scenarioLine:Int, testID: String, featureFile: File, isPreviousLineTagged:Boolean):String{
+        val lines = readFile(featureFile.absolutePath)
+        val outputPath = featureFile.absolutePath+"test"
+
         if(isPreviousLineTagged){
             // Append to scenarioLine-1
             println("Adding tag to existing tags");
+            appendToLine(lines,scenarioLine-1," @"+testID);
         }else{
             // Add newLine in scenario Line
             println("Adding new line with tag");
+            addNewLine(lines,scenarioLine-1,"    @"+testID);
+        }
+        writeFile(featureFile.absolutePath+"test", lines)
+        return outputPath
+    }
+
+    fun readFile(filePath: String): MutableList<String> {
+        return File(filePath).readLines().toMutableList()
+    }
+
+    fun addNewLine(lines: MutableList<String>, lineIndex: Int, tag: String) {
+        if (lineIndex in lines.indices) {
+            lines[lineIndex] = "\n"+tag+"\n"+lines[lineIndex]
+        } else {
+            throw IndexOutOfBoundsException("Line index $lineIndex is out of bounds.")
+        }
+    }
+
+    fun appendToLine(lines: MutableList<String>, lineIndex: Int, tag: String) {
+        if (lineIndex in lines.indices) {
+            lines[lineIndex-1] = lines[lineIndex-1]+tag
+        } else {
+            throw IndexOutOfBoundsException("Line index $lineIndex is out of bounds.")
+        }
+    }
+
+    fun writeFile(filePath: String, lines: List<String>) {
+        File(filePath).printWriter().use { out ->
+            lines.forEach { line ->
+                out.println(line)
+            }
         }
     }
 

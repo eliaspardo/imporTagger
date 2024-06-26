@@ -1,9 +1,11 @@
+import kotlin.test.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class XRayTaggerTest{
     lateinit var xRayTagger:XRayTagger;
@@ -50,6 +52,12 @@ internal class XRayTaggerTest{
             Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithOtherScenario.feature", 0),
             Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithoutScenario.feature", 0)
         )
+
+        @JvmStatic
+        fun featureFilesAddTag() = listOf(
+            Arguments.of(2,"TEST-2806","src/test/resources/fileTEST-2806WithoutTag.feature",false),
+            Arguments.of(3,"TEST-2806","src/test/resources/fileTEST-2806WithOtherTag.feature",true)
+        )
     }
     @ParameterizedTest
     @MethodSource("featureFilesTestTag")
@@ -76,5 +84,13 @@ internal class XRayTaggerTest{
         assertEquals(expectedLine, xRayTagger.findLineWhereScenario(expectedScenario,File(featureFile)));
     }
 
+    @ParameterizedTest
+    @MethodSource("featureFilesAddTag")
+    fun testAddTag(scenarioLine:Int, testID: String, featureFile: String, isPreviousLineTagged: Boolean){
+        val outputPath = xRayTagger.addTag(scenarioLine,testID,File(featureFile),isPreviousLineTagged);
+        assertTrue(xRayTagger.isFileTagged(File(outputPath),testID))
+        val fileManager = FileManager();
+        fileManager.deleteFile(File(outputPath));
+    }
 }
 
