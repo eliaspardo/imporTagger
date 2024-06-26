@@ -144,7 +144,7 @@ suspend fun main(args: Array<String>) {
     val fileManager = FileManager()
     val xRayTagger = XRayTagger()
     // This file matches the TEST-2806 scenario, but not tagged
-    val featureFile = "fileTEST-2806WithoutTag.feature"
+    val featureFile = "src/test/resources/fileTEST-2806WithoutTag.feature"
     logInOnXRay("","");
 
     // Check if feature file is already tagged, if not, start tagging process

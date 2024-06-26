@@ -20,35 +20,35 @@ internal class XRayTaggerTest{
 
         @JvmStatic
         fun featureFilesTestTag() = listOf(
-            Arguments.of("fileTEST-2806WithoutTag.feature", "TEST-2806", false),
-            Arguments.of("fileTEST-2806WithOtherTag.feature", "TEST-2806", false),
-            Arguments.of("fileTEST-2806WithTag.feature", "TEST-2807", false),
-            Arguments.of("fileTEST-2806WithTag.feature", "TEST-2806", true)
+            Arguments.of("src/test/resources/fileTEST-2806WithoutTag.feature", "TEST-2806", false),
+            Arguments.of("src/test/resources/fileTEST-2806WithOtherTag.feature", "TEST-2806", false),
+            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", "TEST-2807", false),
+            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", "TEST-2806", true)
         )
 
         @JvmStatic
         fun featureFilesPreviousLineTagged() = listOf(
-            Arguments.of("fileTEST-2806WithoutTag.feature", 2, false),
-            Arguments.of("fileTEST-2806WithOtherTag.feature", 3, true),
-            Arguments.of("fileTEST-2806WithTag.feature", 3, true)
+            Arguments.of("src/test/resources/fileTEST-2806WithoutTag.feature", 2, false),
+            Arguments.of("src/test/resources/fileTEST-2806WithOtherTag.feature", 3, true),
+            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", 3, true)
         )
 
         @JvmStatic
         fun featureFilesScenarios() = listOf(
-            Arguments.of("fileTEST-2806WithoutTag.feature", expectedTrimmedScenario, true),
-            Arguments.of("fileTEST-2806WithOtherTag.feature", expectedTrimmedScenario, true),
-            Arguments.of("fileTEST-2806WithTag.feature", expectedTrimmedScenario,true),
-            Arguments.of("fileTEST-2806WithoutScenario.feature", expectedTrimmedScenario,false)
+            Arguments.of("src/test/resources/fileTEST-2806WithoutTag.feature", expectedTrimmedScenario, true),
+            Arguments.of("src/test/resources/fileTEST-2806WithOtherTag.feature", expectedTrimmedScenario, true),
+            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", expectedTrimmedScenario,true),
+            Arguments.of("src/test/resources/fileTEST-2806WithoutScenario.feature", expectedTrimmedScenario,false)
         )
 
         @JvmStatic
         fun featureFilesScenarioLine() = listOf(
-            Arguments.of(expectedScenario, "fileTEST-2806WithoutTag.feature", 2),
-            Arguments.of(expectedScenario, "fileTEST-2806WithOtherTag.feature", 3),
-            Arguments.of(expectedScenario, "fileTEST-2806WithTag.feature", 3),
-            Arguments.of(expectedScenario, "fileTEST-2806WithTag.feature", 3),
-            Arguments.of(expectedScenario, "fileTEST-2806WithOtherScenario.feature", 0),
-            Arguments.of(expectedScenario, "fileTEST-2806WithoutScenario.feature", 0)
+            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithoutTag.feature", 2),
+            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithOtherTag.feature", 3),
+            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithTag.feature", 3),
+            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithTag.feature", 3),
+            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithOtherScenario.feature", 0),
+            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithoutScenario.feature", 0)
         )
     }
     @ParameterizedTest
