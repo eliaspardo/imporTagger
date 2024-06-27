@@ -1,4 +1,3 @@
-import kotlin.test.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -71,29 +70,31 @@ internal class XRayTaggerTest{
     @ParameterizedTest
     @MethodSource("featureFilesPreviousLineTagged")
     fun testCheckIfPreviousLineIsTagged(featureFile: String, expectedLine:Int,expected: Boolean){
-        assertEquals(expected, xRayTagger.checkIfPreviousLineIsTagged(expectedLine,File(featureFile)));
+        val featureFileLines = fileManager.readFile(featureFile)
+        assertEquals(expected, xRayTagger.checkIfPreviousLineIsTagged(expectedLine,featureFileLines));
     }
 
     @ParameterizedTest
     @MethodSource("featureFilesScenarios")
     fun testGetScenario(featureFile: String, expectedTrimmedScenario:String,expected: Boolean){
-        var actualTrimmedScenario = xRayTagger.getScenario(File(featureFile)).replace(" ","").replace("\t", "");
+        val featureFileLines = fileManager.readFile(featureFile)
+        var actualTrimmedScenario = xRayTagger.getScenario(featureFileLines).replace(" ","").replace("\t", "");
         assertEquals(expected,expectedTrimmedScenario==actualTrimmedScenario)
     }
 
     @ParameterizedTest
     @MethodSource("featureFilesScenarioLine")
     fun testFindLineWhereScenario(expectedScenario:String, featureFile: String, expectedLine:Int){
-        assertEquals(expectedLine, xRayTagger.findLineWhereScenario(expectedScenario,File(featureFile)));
+        val featureFileLines = fileManager.readFile(featureFile)
+        assertEquals(expectedLine, xRayTagger.findLineWhereScenario(expectedScenario,featureFileLines));
     }
 
     @ParameterizedTest
     @MethodSource("featureFilesAddTag")
     fun testAddTag(scenarioLine:Int, testID: String, featureFile: String, isPreviousLineTagged: Boolean){
         val featureFileLines = fileManager.readFile(featureFile)
-        val outputPath = xRayTagger.addTag(scenarioLine,testID,File(featureFile),isPreviousLineTagged,featureFileLines);
-        assertTrue(xRayTagger.isFileTagged(featureFileLines,testID))
-        fileManager.deleteFile(File(outputPath));
+        val featureFileLinesTagged = xRayTagger.addTag(scenarioLine, testID, isPreviousLineTagged, featureFileLines);
+        assertTrue(xRayTagger.isFileTagged(featureFileLinesTagged,testID))
     }
 }
 

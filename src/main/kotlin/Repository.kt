@@ -136,10 +136,13 @@ suspend fun downloadCucumberTestsFromXRay(testID: String): File {
 }
 
 
-// TODO This is what we need to call to tag tests into featureFiles.
-// TODO This process needs to be done per each test case/precondition in each file, so the loop can get quite complex.
-// TODO We might run into race conditions if we do this too quickly after importing - tests might not yet be available on the API
+// This is what we need to call to tag tests into featureFiles.
+// This process needs to be done per each test case/precondition in each file, so the loop can get quite complex.
+// TODO Investigate potential race conditions if we do this too quickly after importing - tests might not yet be available on the API
 suspend fun main(args: Array<String>) {
+    // TODO Parse response from import calls to Xray to get list of testIDs
+    // TODO This should be a list of tests and preconditions.
+    //  Find a way to identify: using Backgrounds/Scenarios and TEST_ / PRECON_ tags
     val testID = "TEST-4788"
     val fileManager = FileManager()
     val xRayTagger = XRayTagger()
@@ -149,7 +152,6 @@ suspend fun main(args: Array<String>) {
     val featureFile = "TEST-4788_untagged.feature"
     logInOnXRay("","");
 
-    // TODO - this needs to be done for preconditions too
     // Check if feature file is already tagged, if not, start tagging process
     val featureFileLines = fileManager.readFile(featureFile)
     if(!xRayTagger.isFileTagged(featureFileLines,testID)){
@@ -160,11 +162,13 @@ suspend fun main(args: Array<String>) {
         fileManager.deleteFile(zipFile)
 
         // Get Scenario from extracted file
-        val scenario = xRayTagger.getScenario(File(unzippedTestFile))
+        val unzippedFileLines = fileManager.readFile(unzippedTestFile)
+        val scenario = xRayTagger.getScenario(unzippedFileLines)
         fileManager.deleteFile(File(unzippedTestFile))
 
-        // TODO Tag FeatureFile
-        xRayTagger.tagTest(scenario,testID,File(featureFile),featureFileLines)
+        // Find Scenario in featureFile and tag it
+        val featureFileLinesTagged = xRayTagger.tagTest(scenario, testID, featureFileLines)
+        fileManager.writeFile(featureFile+"test", featureFileLinesTagged)
     }
 }
 
