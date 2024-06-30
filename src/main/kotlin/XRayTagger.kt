@@ -1,6 +1,8 @@
 import java.io.File
 
 class XRayTagger {
+    val testTag = "@TEST_"
+    val preconditionTag = "#PRECON_"
     fun tagTest(scenario: String, testID: String, featureFileLines: MutableList<String>) : MutableList<String> {
         // Parse Feature File looking for Scenario. Get line number.
         var scenarioLine = findLineWhereScenario(scenario,featureFileLines);
@@ -76,10 +78,13 @@ class XRayTagger {
         }
     }
 
-    fun formatTestTag(tag: String):String{
-        return "@TEST_"+tag;
+    fun formatTestTag(testID: String):String{
+        return testTag+testID;
     }
 
+    fun formatPreconditionTag(preconditionID: String):String{
+        return preconditionTag+preconditionID;
+    }
 
     fun isFileTagged(featureFileLines: List<String>, testID:String):Boolean{
         println("Checking if file tagged: "+formatTestTag(testID))

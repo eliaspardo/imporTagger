@@ -4,21 +4,16 @@ import ImporterViewModel.importResponseMessage
 import ImporterViewModel.loginResponseCode
 import ImporterViewModel.loginResponseMessage
 import ImporterViewModel.loginToken
+import KtorHTTPClient.Companion.getHTTPClientWithJSONParsing
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
-import io.ktor.client.plugins.auth.*
-import io.ktor.client.plugins.auth.providers.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
 import java.io.File
 
 suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatusCode {
@@ -39,34 +34,16 @@ suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatu
     return response.status
 }
 
-suspend fun importFileToXray(path: String): HttpStatusCode {
-    val client = HttpClient (CIO){
-        install(Logging){
-            logger = Logger.DEFAULT
-            level = LogLevel.ALL
-        }
-        install(Auth){
-            bearer{
-               loadTokens {
-                   BearerTokens(loginToken,"")
-               }
-            }
-        }
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-            })
-        }
-    }
+suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
+    val client = getHTTPClientWithJSONParsing(loginToken);
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
 
         setBody(
             MultiPartFormDataContent(
                 formData {
-                    append("file", java.io.File(path).readBytes(), Headers.build {
+                    append("file", java.io.File(featureFilePath).readBytes(), Headers.build {
                         append(HttpHeaders.ContentType, "application/octet-stream")
-                        append(HttpHeaders.ContentDisposition,"filename="+java.io.File(path))
+                        append(HttpHeaders.ContentDisposition,"filename="+java.io.File(featureFilePath))
                     })
                     append("testInfo", java.io.File(ImporterViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
                         append(HttpHeaders.ContentType, "application/octet-stream")
@@ -85,39 +62,68 @@ suspend fun importFileToXray(path: String): HttpStatusCode {
     importResponseMessage = response.status.description
     importResponseBody = response.body()
 
-    // TODO Continue parsing response body
     if(!importResponseBody.errors.isEmpty()){
         println("There are errors")
         println(importResponseBody.errors.toString())
     }
     else{
         println("There are no errors")
+        val fileManager = FileManager()
+        val xRayTagger = XRayTagger()
+        // TODO Continue parsing response body
+        if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
+        // TODO Uncomment once implemented.
+        //if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(path, importResponseBody.updatedOrCreatedPreconditions)
     }
 
     client.close()
     return response.status
 }
 
-suspend fun downloadCucumberTestsFromXRay(testID: String): File {
-    val client = HttpClient(CIO) {
-        install(Logging) {
-            logger = Logger.DEFAULT
-            level = LogLevel.ALL
-        }
-        install(Auth) {
-            bearer {
-                loadTokens {
-                    BearerTokens(loginToken, "")
-                }
-            }
-        }
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-            })
+suspend fun processUpdatedOrCreatedTests(
+    featureFilePath: String,
+    updatedOrCreatedTests: List<Test>,
+    fileManager: FileManager,
+    xRayTagger: XRayTagger
+) {
+    println("Processing Tests")
+    val featureFileLines = fileManager.readFile(featureFilePath)
+    for (test in updatedOrCreatedTests){
+        val testID = test.key
+        // Check if feature file is already tagged, if not, start tagging process
+        if(!xRayTagger.isFileTagged(featureFileLines,testID)) {
+            println("File is not tagged")
+            // Download zip file to know which scenario needs tagging
+            var zipFile = downloadCucumberTestsFromXRay(testID)
+            val unzippedTestFile = fileManager.unzipFile(zipFile)
+            fileManager.deleteFile(zipFile)
+
+            // Get Scenario from extracted file
+            val unzippedFileLines = fileManager.readFile(unzippedTestFile)
+            val scenario = xRayTagger.getScenario(unzippedFileLines)
+            fileManager.deleteFile(File(unzippedTestFile))
+
+            // Find Scenario in featureFile and tag it
+            val featureFileLinesTagged = xRayTagger.tagTest(scenario, testID, featureFileLines)
+            // TODO This needs to write to the same file not +"test"
+            fileManager.writeFile(featureFilePath+"test", featureFileLinesTagged)
         }
     }
+}
+
+// TODO This is just the scaffolding. To be implemented
+fun processUpdatedOrCreatedPreconditions(
+    featureFilePath: String,
+    updatedOrCreatedPreconditions: List<Precondition>,
+    fileManager: FileManager,
+    xRayTagger: XRayTagger) {
+    for (precondition in updatedOrCreatedPreconditions){
+        precondition.key
+    }
+}
+
+suspend fun downloadCucumberTestsFromXRay(testID: String): File {
+    val client = getHTTPClientWithJSONParsing(loginToken);
     val file = File.createTempFile("xrayImporter", ".zip")
     runBlocking {
         val httpResponse: HttpResponse = client.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys="+testID) {
@@ -127,9 +133,8 @@ suspend fun downloadCucumberTestsFromXRay(testID: String): File {
         }
         val responseBody: ByteArray = httpResponse.body()
         file.writeBytes(responseBody)
-        println("A file saved to ${file.path}")
-        println(httpResponse.status.value)
-        println(httpResponse.status.description)
+        println("XRay exported ZIP file saved to ${file.path}")
+        println(httpResponse.status.value.toString()+httpResponse.status.description)
     }
     client.close()
     return file.absoluteFile
