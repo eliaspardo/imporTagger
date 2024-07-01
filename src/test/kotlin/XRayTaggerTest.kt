@@ -1,7 +1,7 @@
 import org.junit.jupiter.params.ParameterizedTest
+import kotlin.test.Test
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.io.File
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -26,7 +26,9 @@ internal class XRayTaggerTest{
             Arguments.of("src/test/resources/fileTEST-2806WithoutTag.feature", "TEST-2806", false),
             Arguments.of("src/test/resources/fileTEST-2806WithOtherTag.feature", "TEST-2806", false),
             Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", "TEST-2807", false),
-            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", "TEST-2806", true)
+            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", "TEST-2806", true),
+            Arguments.of("src/test/resources/TEST-3470_withPreconditions_tagged.feature", "TEST-3436", true),
+            Arguments.of("src/test/resources/TEST-3470_withPreconditions_untagged.feature", "TEST-3436", false)
         )
 
         @JvmStatic
@@ -82,18 +84,33 @@ internal class XRayTaggerTest{
         assertEquals(expected,expectedTrimmedScenario==actualTrimmedScenario)
     }
 
+    // TODO Make this prettier so file and precon is not hardcoded
+    @Test
+    fun testGetPrecondition(){
+        val featureFileLines = fileManager.readFile("src/test/resources/TEST-3470_withPreconditions_tagged.feature")
+        var actualTrimmedPrecondition = xRayTagger.getPrecondition(featureFileLines).replace(" ","").replace("\t", "");
+        assertEquals("Background:Precondition-BaseURL",actualTrimmedPrecondition)
+    }
+
     @ParameterizedTest
     @MethodSource("featureFilesScenarioLine")
     fun testFindLineWhereScenario(expectedScenario:String, featureFile: String, expectedLine:Int){
         val featureFileLines = fileManager.readFile(featureFile)
-        assertEquals(expectedLine, xRayTagger.findLineWhereScenario(expectedScenario,featureFileLines));
+        assertEquals(expectedLine, xRayTagger.findLineWhereScenarioOrPrecondition(expectedScenario,featureFileLines));
+    }
+
+    // TODO Make this prettier so file and precon is not hardcoded
+    @Test
+    fun testFindLineWherePrecondition(){
+        val featureFileLines = fileManager.readFile("src/test/resources/TEST-3470_withPreconditions_tagged.feature")
+        assertEquals(4, xRayTagger.findLineWhereScenarioOrPrecondition("Background:Precondition-BaseURL",featureFileLines));
     }
 
     @ParameterizedTest
     @MethodSource("featureFilesAddTag")
     fun testAddTag(scenarioLine:Int, testID: String, featureFile: String, isPreviousLineTagged: Boolean){
         val featureFileLines = fileManager.readFile(featureFile)
-        val featureFileLinesTagged = xRayTagger.addTag(scenarioLine, testID, isPreviousLineTagged, featureFileLines);
+        val featureFileLinesTagged = xRayTagger.addTestTag(scenarioLine, testID, isPreviousLineTagged, featureFileLines);
         assertTrue(xRayTagger.isFileTagged(featureFileLinesTagged,testID))
     }
 }

@@ -9,8 +9,10 @@ import kotlinx.serialization.json.Json
 
 class KtorHTTPClient {
     companion object {
+        val httpClient: HttpClient? = null
         fun getHTTPClientWithJSONParsing(loginToken: String): HttpClient {
-            return HttpClient(CIO) {
+            if (httpClient!=null) return this.httpClient
+            else return HttpClient(CIO) {
                 install(Logging) {
                     // TODO This logging should be controlled from somewhere else
                     logger = Logger.DEFAULT

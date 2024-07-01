@@ -70,10 +70,9 @@ suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
         println("There are no errors")
         val fileManager = FileManager()
         val xRayTagger = XRayTagger()
-        // TODO Continue parsing response body
         if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
-        // TODO Uncomment once implemented.
-        //if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(path, importResponseBody.updatedOrCreatedPreconditions)
+        // TODO Uncomment once preconditions implemented.
+        if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(featureFilePath, importResponseBody.updatedOrCreatedPreconditions, fileManager, xRayTagger)
     }
 
     client.close()
@@ -81,7 +80,7 @@ suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
 }
 
 suspend fun processUpdatedOrCreatedTests(
-    featureFilePath: String,
+    featureFilePath:String,
     updatedOrCreatedTests: List<Test>,
     fileManager: FileManager,
     xRayTagger: XRayTagger
@@ -111,15 +110,35 @@ suspend fun processUpdatedOrCreatedTests(
     }
 }
 
-// TODO This is just the scaffolding. To be implemented
-fun processUpdatedOrCreatedPreconditions(
-    featureFilePath: String,
+suspend fun processUpdatedOrCreatedPreconditions(
+    featureFilePath:String,
     updatedOrCreatedPreconditions: List<Precondition>,
     fileManager: FileManager,
     xRayTagger: XRayTagger) {
+    println("Processing Preconditions")
+    val featureFileLines = fileManager.readFile(featureFilePath)
     for (precondition in updatedOrCreatedPreconditions){
-        precondition.key
+        val preconditionID = precondition.key
+        if(!xRayTagger.isFileTagged(featureFileLines,preconditionID)) {
+            println("File is not tagged")
+            // Download zip file to know which scenario needs tagging
+            var zipFile = downloadCucumberTestsFromXRay(preconditionID)
+            val unzippedTestFile = fileManager.unzipFile(zipFile)
+            fileManager.deleteFile(zipFile)
+
+            // TODO Get Precondition from extracted file
+            val unzippedFileLines = fileManager.readFile(unzippedTestFile)
+            val precondition = xRayTagger.getPrecondition(unzippedFileLines)
+            fileManager.deleteFile(File(unzippedTestFile))
+
+            // TODO Find Precondition in featureFile and tag it
+            val featureFileLinesTagged = xRayTagger.tagPrecondition(precondition, preconditionID, featureFileLines)
+            // TODO This needs to write to the same file not +"preconditions"
+            fileManager.writeFile(featureFilePath+"preconditions", featureFileLinesTagged)
+        }
+
     }
+
 }
 
 suspend fun downloadCucumberTestsFromXRay(testID: String): File {
@@ -145,9 +164,7 @@ suspend fun downloadCucumberTestsFromXRay(testID: String): File {
 // This process needs to be done per each test case/precondition in each file, so the loop can get quite complex.
 // TODO Investigate potential race conditions if we do this too quickly after importing - tests might not yet be available on the API
 suspend fun main(args: Array<String>) {
-    // TODO Parse response from import calls to Xray to get list of testIDs
-    // TODO This should be a list of tests and preconditions.
-    //  Find a way to identify: using Backgrounds/Scenarios and TEST_ / PRECON_ tags
+    //  TODO Find a way to identify: using Backgrounds/Scenarios and TEST_ / PRECON_ tags
     val testID = "TEST-4788"
     val fileManager = FileManager()
     val xRayTagger = XRayTagger()
