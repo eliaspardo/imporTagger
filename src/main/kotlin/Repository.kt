@@ -116,6 +116,7 @@ suspend fun processUpdatedOrCreatedPreconditions(
     fileManager: FileManager,
     xRayTagger: XRayTagger) {
     println("Processing Preconditions")
+    // This looks as duplicated code, but we need to re-read the file in case the processUpdatedOrCreatedTests has written to file
     val featureFileLines = fileManager.readFile(featureFilePath)
     for (precondition in updatedOrCreatedPreconditions){
         val preconditionID = precondition.key

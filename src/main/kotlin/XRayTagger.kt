@@ -107,12 +107,14 @@ class XRayTagger {
     fun getScenario(unzippedFileLines: List<String>):String{
         var scenario = "";
         for (line in unzippedFileLines){
-            if(line.contains("Scenario:")){
+            // Looking for Scenario instead of Scenario: so we also capture scenario outlines
+            if(line.contains("Scenario")){
                 println("Scenario found:"+line)
                 scenario = line
                 return scenario;
             }
         }
+        // TODO This should return an exception
         return scenario;
     }
 
@@ -125,6 +127,7 @@ class XRayTagger {
                 return precondition;
             }
         }
+        // TODO This should return an exception
         return precondition;
     }
 }
