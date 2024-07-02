@@ -1,10 +1,8 @@
 import org.junit.jupiter.params.ParameterizedTest
-import kotlin.test.Test
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import kotlin.test.BeforeTest
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
+import kotlin.test.Test
 
 internal class XRayTaggerTest{
     lateinit var xRayTagger:XRayTagger;
@@ -89,9 +87,28 @@ internal class XRayTaggerTest{
 
 
         @JvmStatic
-        fun featureFilesAddTag() = listOf(
+        fun featureFilesAddTestTag() = listOf(
             Arguments.of(2,"TEST-2806","src/test/resources/fileTEST-2806WithoutTag.feature",false),
             Arguments.of(3,"TEST-2806","src/test/resources/fileTEST-2806WithOtherTag.feature",true)
+        )
+
+        @JvmStatic
+        fun featureFilesAddPreconditionTag() = listOf(
+            Arguments.of(4,"TEST-3436","src/test/resources/TEST-3470_withPreconditions_untagged.feature"),
+            Arguments.of(4,"TEST-4705","src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature")
+        )
+
+        // TODO Add negative test cases
+        @JvmStatic
+        fun featureFilesTagTest() = listOf(
+            Arguments.of(expectedScenario,"TEST-2806","src/test/resources/fileTEST-2806WithoutTag.feature"),
+            Arguments.of(expectedScenario,"TEST-2806","src/test/resources/fileTEST-2806WithOtherTag.feature")
+        )
+
+        @JvmStatic
+        fun featureFilesTagPrecondition() = listOf(
+            Arguments.of(expectedPrecondition1,"TEST-3436","src/test/resources/TEST-3470_withPreconditions_untagged.feature"),
+            Arguments.of(expectedPrecondition2,"TEST-4705","src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature")
         )
     }
     @ParameterizedTest
@@ -139,11 +156,50 @@ internal class XRayTaggerTest{
     }
 
     @ParameterizedTest
-    @MethodSource("featureFilesAddTag")
-    fun testAddTag(scenarioLine:Int, testID: String, featureFile: String, isPreviousLineTagged: Boolean){
+    @MethodSource("featureFilesAddTestTag")
+    fun testAddTestTag(scenarioLine:Int, testID: String, featureFile: String, isPreviousLineTagged: Boolean){
         val featureFileLines = fileManager.readFile(featureFile)
         val featureFileLinesTagged = xRayTagger.addTestTag(scenarioLine, testID, isPreviousLineTagged, featureFileLines);
         assertTrue(xRayTagger.isFileTagged(featureFileLinesTagged,testID))
+    }
+    @ParameterizedTest
+    @MethodSource("featureFilesAddPreconditionTag")
+    fun testAddPreconditionTag(preconditionLine:Int, preconditionID: String, featureFile: String){
+        val featureFileLines = fileManager.readFile(featureFile)
+        val featureFileLinesTagged = xRayTagger.addPreconditionTag(preconditionLine, preconditionID, featureFileLines);
+        assertTrue(xRayTagger.isFileTagged(featureFileLinesTagged,preconditionID))
+    }
+
+    @ParameterizedTest
+    @MethodSource("featureFilesTagTest")
+    fun testTagTest(scenario: String, testID: String, featureFile: String) {
+        val featureFileLines = fileManager.readFile(featureFile)
+        val featureFileLinesTagged = xRayTagger.tagTest(scenario, testID, featureFileLines);
+        assertTrue(xRayTagger.isFileTagged(featureFileLinesTagged,testID));
+    }
+
+    @ParameterizedTest
+    @MethodSource("featureFilesTagPrecondition")
+    fun testTagPrecondition(scenario: String, preconditionID: String, featureFile: String) {
+        val featureFileLines = fileManager.readFile(featureFile)
+        val featureFileLinesTagged = xRayTagger.tagPrecondition(scenario, preconditionID, featureFileLines);
+        assertTrue(xRayTagger.isFileTagged(featureFileLinesTagged,preconditionID));
+    }
+
+    @Test
+    fun testAddNewLineThrowsIndexOutOfBoundsException(){
+        val featureFileLines = fileManager.readFile("src/test/resources/fileTEST-2806WithoutTag.feature")
+        assertFailsWith<IndexOutOfBoundsException>{
+            xRayTagger.addNewLine(featureFileLines,100,"TEST-666")
+        }
+    }
+
+    @Test
+    fun testAppendToLineThrowsIndexOutOfBoundsException(){
+        val featureFileLines = fileManager.readFile("src/test/resources/fileTEST-2806WithoutTag.feature")
+        assertFailsWith<IndexOutOfBoundsException>{
+            xRayTagger.appendToLine(featureFileLines,100,"TEST-666")
+        }
     }
 }
 
