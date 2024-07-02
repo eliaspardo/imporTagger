@@ -12,7 +12,6 @@ class XRayTagger {
         return addTestTag(scenarioLine, testID, isPreviousLineTagged, featureFileLines);
     }
 
-    // TODO
     fun tagPrecondition(precondition: String, preconditionID: String, featureFileLines: MutableList<String>) : MutableList<String> {
         // Parse Feature File looking for Scenario. Get line number.
         var preconditionLine = findLineWhereScenarioOrPrecondition(precondition,featureFileLines);

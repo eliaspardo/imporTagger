@@ -104,8 +104,7 @@ suspend fun processUpdatedOrCreatedTests(
 
             // Find Scenario in featureFile and tag it
             val featureFileLinesTagged = xRayTagger.tagTest(scenario, testID, featureFileLines)
-            // TODO This needs to write to the same file not +"test"
-            fileManager.writeFile(featureFilePath+"test", featureFileLinesTagged)
+            fileManager.writeFile(featureFilePath, featureFileLinesTagged)
         }
     }
 }
@@ -127,15 +126,14 @@ suspend fun processUpdatedOrCreatedPreconditions(
             val unzippedTestFile = fileManager.unzipFile(zipFile)
             fileManager.deleteFile(zipFile)
 
-            // TODO Get Precondition from extracted file
+            // Get Precondition from extracted file
             val unzippedFileLines = fileManager.readFile(unzippedTestFile)
             val precondition = xRayTagger.getPrecondition(unzippedFileLines)
             fileManager.deleteFile(File(unzippedTestFile))
 
-            // TODO Find Precondition in featureFile and tag it
+            // Find Precondition in featureFile and tag it
             val featureFileLinesTagged = xRayTagger.tagPrecondition(precondition, preconditionID, featureFileLines)
-            // TODO This needs to write to the same file not +"preconditions"
-            fileManager.writeFile(featureFilePath+"preconditions", featureFileLinesTagged)
+            fileManager.writeFile(featureFilePath, featureFileLinesTagged)
         }
 
     }
@@ -161,37 +159,14 @@ suspend fun downloadCucumberTestsFromXRay(testID: String): File {
 }
 
 
-// This is what we need to call to tag tests into featureFiles.
-// This process needs to be done per each test case/precondition in each file, so the loop can get quite complex.
 // TODO Investigate potential race conditions if we do this too quickly after importing - tests might not yet be available on the API
 suspend fun main(args: Array<String>) {
-    //  TODO Find a way to identify: using Backgrounds/Scenarios and TEST_ / PRECON_ tags
-    val testID = "TEST-4788"
-    val fileManager = FileManager()
-    val xRayTagger = XRayTagger()
-    // This file matches the TEST-2806 scenario, but not tagged
-    //val featureFile = "src/test/resources/fileTEST-2806WithoutTag.feature"
-    // This file matches TEST-4788 but is not tagged
-    val featureFile = "TEST-4788_untagged.feature"
+    val featureFileName = "TEST-4788_untagged.feature"
+    val file = FeatureFile(featureFileName, featureFileName)
+    val testInfoFilePath = "testInfo - xms.test.api.json"
+    val testInfoFile = File(testInfoFilePath)
+    ImporterViewModel.onTestInfoFileChooserClose(testInfoFile)
     logInOnXRay("","");
-
-    // Check if feature file is already tagged, if not, start tagging process
-    val featureFileLines = fileManager.readFile(featureFile)
-    if(!xRayTagger.isFileTagged(featureFileLines,testID)){
-        println("File is not tagged")
-        // Download zip file to know which scenario needs tagging
-        var zipFile = downloadCucumberTestsFromXRay(testID)
-        val unzippedTestFile = fileManager.unzipFile(zipFile)
-        fileManager.deleteFile(zipFile)
-
-        // Get Scenario from extracted file
-        val unzippedFileLines = fileManager.readFile(unzippedTestFile)
-        val scenario = xRayTagger.getScenario(unzippedFileLines)
-        fileManager.deleteFile(File(unzippedTestFile))
-
-        // Find Scenario in featureFile and tag it
-        val featureFileLinesTagged = xRayTagger.tagTest(scenario, testID, featureFileLines)
-        fileManager.writeFile(featureFile+"test", featureFileLinesTagged)
-    }
+    file.import();
 }
 

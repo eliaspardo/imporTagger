@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @Composable
-fun FeatureFileListUI(onRemoveFile: (file: File) -> Unit) {
+fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
     Scaffold(scaffoldState = scaffoldState){
