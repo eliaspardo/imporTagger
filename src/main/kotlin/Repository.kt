@@ -71,7 +71,6 @@ suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
         val fileManager = FileManager()
         val xRayTagger = XRayTagger()
         if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
-        // TODO Uncomment once preconditions implemented.
         if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(featureFilePath, importResponseBody.updatedOrCreatedPreconditions, fileManager, xRayTagger)
     }
 
@@ -121,18 +120,8 @@ suspend fun processUpdatedOrCreatedPreconditions(
         val preconditionID = precondition.key
         if(!xRayTagger.isFileTagged(featureFileLines,preconditionID)) {
             println("File is not tagged")
-            // Download zip file to know which scenario needs tagging
-            var zipFile = downloadCucumberTestsFromXRay(preconditionID)
-            val unzippedTestFile = fileManager.unzipFile(zipFile)
-            fileManager.deleteFile(zipFile)
-
-            // Get Precondition from extracted file
-            val unzippedFileLines = fileManager.readFile(unzippedTestFile)
-            val precondition = xRayTagger.getPrecondition(unzippedFileLines)
-            fileManager.deleteFile(File(unzippedTestFile))
-
-            // Find Precondition in featureFile and tag it
-            val featureFileLinesTagged = xRayTagger.tagPrecondition(precondition, preconditionID, featureFileLines)
+            // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
+            val featureFileLinesTagged = xRayTagger.tagPrecondition(preconditionID, featureFileLines)
             fileManager.writeFile(featureFilePath, featureFileLinesTagged)
         }
 
@@ -149,6 +138,7 @@ suspend fun downloadCucumberTestsFromXRay(testID: String): File {
                 println("Received $bytesSentTotal bytes from $contentLength")
             }
         }
+        // TODO Handle error cases - Eg. Key doesn't exist.
         val responseBody: ByteArray = httpResponse.body()
         file.writeBytes(responseBody)
         println("XRay exported ZIP file saved to ${file.path}")

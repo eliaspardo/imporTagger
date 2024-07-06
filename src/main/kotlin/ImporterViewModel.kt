@@ -101,7 +101,7 @@ object ImporterViewModel {
     }
 
     fun isImportButtonEnabled(): Boolean{
-        return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0)
+        return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0&&testInfoFile!=null)
     }
 
     fun isLoginError(): Boolean{

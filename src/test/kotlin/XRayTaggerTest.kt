@@ -145,14 +145,14 @@ internal class XRayTaggerTest{
     @MethodSource("featureFilesScenarioLine")
     fun testFindLineWhereScenario(expectedScenario:String, featureFile: String, expectedLine:Int){
         val featureFileLines = fileManager.readFile(featureFile)
-        assertEquals(expectedLine, xRayTagger.findLineWhereScenarioOrPrecondition(expectedScenario,featureFileLines));
+        assertEquals(expectedLine, xRayTagger.findLineWhereScenario(expectedScenario,featureFileLines));
     }
 
     @ParameterizedTest
     @MethodSource("featureFilesPreconditionsLine")
     fun testFindLineWherePrecondition(expectedPrecondition:String, featureFile: String, expectedLine:Int){
         val featureFileLines = fileManager.readFile(featureFile)
-        assertEquals(expectedLine, xRayTagger.findLineWhereScenarioOrPrecondition(expectedPrecondition,featureFileLines));
+        assertEquals(expectedLine, xRayTagger.findLineWhereScenario(expectedPrecondition,featureFileLines));
     }
 
     @ParameterizedTest

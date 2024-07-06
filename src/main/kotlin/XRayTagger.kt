@@ -1,9 +1,10 @@
 class XRayTagger {
     val testTag = "@TEST_"
     val preconditionTag = "#PRECON_"
+    val preconditionPrefix = "Background"
     fun tagTest(scenario: String, testID: String, featureFileLines: MutableList<String>) : MutableList<String> {
         // Parse Feature File looking for Scenario. Get line number.
-        var scenarioLine = findLineWhereScenarioOrPrecondition(scenario,featureFileLines);
+        var scenarioLine = findLineWhereScenario(scenario,featureFileLines);
 
         // Check if previous line is tagged, so tag is appended, otherwise, new line created.
         var isPreviousLineTagged = checkIfPreviousLineIsTagged(scenarioLine, featureFileLines);
@@ -12,26 +13,42 @@ class XRayTagger {
         return addTestTag(scenarioLine, testID, isPreviousLineTagged, featureFileLines);
     }
 
-    fun tagPrecondition(precondition: String, preconditionID: String, featureFileLines: MutableList<String>) : MutableList<String> {
+    fun tagPrecondition(preconditionID: String, featureFileLines: MutableList<String>) : MutableList<String> {
         // Parse Feature File looking for Scenario. Get line number.
-        var preconditionLine = findLineWhereScenarioOrPrecondition(precondition,featureFileLines);
+        var preconditionLine = findLineWherePrecondition(featureFileLines);
 
         // Add tag
         return addPreconditionTag(preconditionLine, preconditionID, featureFileLines);
     }
 
     // Parse Feature File looking for Scenario. Get line number.
-     fun findLineWhereScenarioOrPrecondition(scenarioOrPrecondition: String, featureFileLines: MutableList<String>):Int{
-        println("Looking for Scenario/Precondition:"+scenarioOrPrecondition);
+     fun findLineWhereScenario(scenario: String, featureFileLines: MutableList<String>):Int{
+        println("Looking for Scenario/Precondition:"+scenario);
 
         // Trim tabs and whitespaces
-        var trimmedScenario = scenarioOrPrecondition.replace(" ","").replace("\t", "");
+        var trimmedScenario = scenario.replace(" ","").replace("\t", "");
         var lineNumber = 0;
         for(line in featureFileLines){
             lineNumber++;
             var trimmedLine = line.replace(" ", "").replace("\t", "");
             if (trimmedLine.contains(trimmedScenario)){
-                println("Found Scenario/Precondition in line :"+lineNumber);
+                println("Found Scenario/Precondition in line:"+lineNumber);
+                println(line);
+                return lineNumber;
+            }
+        }
+        return 0;
+    }
+
+    // Parse Feature File looking for Precondition. Get line number.
+    fun findLineWherePrecondition(featureFileLines: MutableList<String>):Int{
+        println("Looking for Preconditions");
+        var lineNumber = 0;
+        for(line in featureFileLines){
+            lineNumber++;
+            if (line.contains(preconditionPrefix)){
+                println("Found Precondition in line:"+lineNumber);
+                println(line);
                 return lineNumber;
             }
         }
@@ -70,7 +87,7 @@ class XRayTagger {
 
     fun addPreconditionTag(preconditionLine: Int, preconditionID: String, featureFileLines: MutableList<String>):MutableList<String>{
         println("Adding new line with precondition tag");
-        addNewLine(featureFileLines,preconditionLine+1,formatPreconditionTag(preconditionID));
+        addNewLine(featureFileLines,preconditionLine,formatPreconditionTag(preconditionID));
         return featureFileLines
     }
 
