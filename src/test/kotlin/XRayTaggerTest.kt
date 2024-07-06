@@ -107,8 +107,8 @@ internal class XRayTaggerTest{
 
         @JvmStatic
         fun featureFilesTagPrecondition() = listOf(
-            Arguments.of(expectedPrecondition1,"TEST-3436","src/test/resources/TEST-3470_withPreconditions_untagged.feature"),
-            Arguments.of(expectedPrecondition2,"TEST-4705","src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature")
+            Arguments.of("TEST-3436","src/test/resources/TEST-3470_withPreconditions_untagged.feature"),
+            Arguments.of("TEST-4705","src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature")
         )
     }
     @ParameterizedTest
@@ -180,9 +180,9 @@ internal class XRayTaggerTest{
 
     @ParameterizedTest
     @MethodSource("featureFilesTagPrecondition")
-    fun testTagPrecondition(scenario: String, preconditionID: String, featureFile: String) {
+    fun testTagPrecondition(preconditionID: String, featureFile: String) {
         val featureFileLines = fileManager.readFile(featureFile)
-        val featureFileLinesTagged = xRayTagger.tagPrecondition(scenario, preconditionID, featureFileLines);
+        val featureFileLinesTagged = xRayTagger.tagPrecondition(preconditionID, featureFileLines);
         assertTrue(xRayTagger.isFileTagged(featureFileLinesTagged,preconditionID));
     }
 
