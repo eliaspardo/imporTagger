@@ -3,7 +3,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.ktor.http.*
 
-data class File(val name: String, val path: String, ) {
+data class FeatureFile(val name: String, val path: String) {
     var isChecked by mutableStateOf(false)
     var isImported by mutableStateOf(false)
     var isError by mutableStateOf(false)
@@ -28,7 +28,7 @@ data class File(val name: String, val path: String, ) {
         return name.substringAfterLast('.', "").equals("feature")
     }
 
-    // TODO Review
+    // TODO Review. We probably want this method to be renamed and separating the import and tagging of files
     suspend fun import() {
         val response = importFileToXray(path)
         if(response!= HttpStatusCode.OK){

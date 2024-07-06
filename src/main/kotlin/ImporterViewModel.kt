@@ -5,7 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 object ImporterViewModel {
-    var featureFiles = mutableStateListOf<File>()
+    var featureFiles = mutableStateListOf<FeatureFile>()
         private set
     var testInfoFile = mutableStateOf<java.io.File?>(null)
         private set
@@ -76,7 +76,7 @@ object ImporterViewModel {
         appState = AppState.DEFAULT
     }
 
-    val onRemoveFile: (file: File) -> Unit = { file ->
+    val onRemoveFile: (featureFile: FeatureFile) -> Unit = { file ->
         featureFiles.remove(file)
     }
 
@@ -101,7 +101,7 @@ object ImporterViewModel {
     }
 
     fun isImportButtonEnabled(): Boolean{
-        return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0)
+        return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0&&testInfoFile!=null)
     }
 
     fun isLoginError(): Boolean{
@@ -113,8 +113,8 @@ object ImporterViewModel {
         return featureFiles.filter{ file->file.isChecked==true}.size>=10
     }
 
-    fun addFileToList(file: File){
-        featureFiles.add(file)
+    fun addFileToList(featureFile: FeatureFile){
+        featureFiles.add(featureFile)
     }
 
     fun calculatePercentageProcessed(){
@@ -125,7 +125,7 @@ object ImporterViewModel {
         files.forEach{ file->
             // Only add file if not found in list
             if((this.featureFiles.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size)==0){
-                addFileToList(File(file.name, file.absolutePath))
+                addFileToList(FeatureFile(file.name, file.absolutePath))
             }
         }
     }

@@ -46,6 +46,7 @@ fun LoginBox(
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
                         // TODO Tab goes to next field, but writes tab, removing it here, not very elegant
+                        // TODO When doing Alt+Tab the last character is deleted
                         onLoginChanged(ImporterViewModel.xrayClientID.substring(0, maxOf(ImporterViewModel.xrayClientID.length - 1,0)), ImporterViewModel.xrayClientSecret)
                         true
                     } else {
