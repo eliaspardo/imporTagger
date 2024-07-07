@@ -1,8 +1,12 @@
+import mu.KotlinLogging
 class XRayTagger {
     val testTag = "@TEST_"
     val preconditionTag = "#PRECON_"
     val preconditionPrefix = "Background"
+    private val logger = KotlinLogging.logger {}
+
     fun tagTest(scenario: String, testID: String, featureFileLines: MutableList<String>) : MutableList<String> {
+        logger.info("Tagging Test: "+testID+" "+scenario);
         // Parse Feature File looking for Scenario. Get line number.
         var scenarioLine = findLineWhereScenario(scenario,featureFileLines);
 
@@ -14,6 +18,7 @@ class XRayTagger {
     }
 
     fun tagPrecondition(preconditionID: String, featureFileLines: MutableList<String>) : MutableList<String> {
+        logger.info("Tagging Precondition: "+preconditionID);
         // Parse Feature File looking for Scenario. Get line number.
         var preconditionLine = findLineWherePrecondition(featureFileLines);
 
@@ -23,7 +28,7 @@ class XRayTagger {
 
     // Parse Feature File looking for Scenario. Get line number.
      fun findLineWhereScenario(scenario: String, featureFileLines: MutableList<String>):Int{
-        println("Looking for Scenario/Precondition:"+scenario);
+        logger.debug("Looking for Scenario/Precondition:"+scenario);
 
         // Trim tabs and whitespaces
         var trimmedScenario = scenario.replace(" ","").replace("\t", "");
@@ -32,8 +37,8 @@ class XRayTagger {
             lineNumber++;
             var trimmedLine = line.replace(" ", "").replace("\t", "");
             if (trimmedLine.contains(trimmedScenario)){
-                println("Found Scenario/Precondition in line:"+lineNumber);
-                println(line);
+                logger.debug("Found Scenario/Precondition in line:"+lineNumber);
+                logger.debug(line);
                 return lineNumber;
             }
         }
@@ -42,13 +47,13 @@ class XRayTagger {
 
     // Parse Feature File looking for Precondition. Get line number.
     fun findLineWherePrecondition(featureFileLines: MutableList<String>):Int{
-        println("Looking for Preconditions");
+        logger.debug("Looking for Preconditions");
         var lineNumber = 0;
         for(line in featureFileLines){
             lineNumber++;
             if (line.contains(preconditionPrefix)){
-                println("Found Precondition in line:"+lineNumber);
-                println(line);
+                logger.debug("Found Precondition in line:"+lineNumber);
+                logger.debug(line);
                 return lineNumber;
             }
         }
@@ -61,7 +66,7 @@ class XRayTagger {
         for(line in featureFileLines) {
             lineNumber++;
             if(lineNumber==scenarioLine-1){
-                println("Line previous to scenario: "+line);
+                logger.debug("Line previous to scenario: "+line);
                 if(line.contains("@")){
                     return true;
                 }
@@ -73,20 +78,21 @@ class XRayTagger {
 
 
     fun addTestTag(scenarioLine: Int, testID: String, isPreviousLineTagged: Boolean, featureFileLines: MutableList<String>):MutableList<String>{
+        logger.info("Adding test tag: "+testID);
         if(isPreviousLineTagged){
             // Append to scenarioLine-1
-            println("Adding tag to existing tags");
+            logger.debug("Adding tag to existing tags");
             appendToLine(featureFileLines,scenarioLine-1,formatTestTag(testID));
         }else{
             // Add newLine in scenario Line
-            println("Adding new line with tag");
+            logger.debug("Adding new line with tag");
             addNewLine(featureFileLines,scenarioLine-1,formatTestTag(testID));
         }
         return featureFileLines
     }
 
     fun addPreconditionTag(preconditionLine: Int, preconditionID: String, featureFileLines: MutableList<String>):MutableList<String>{
-        println("Adding new line with precondition tag");
+        logger.info("Adding precondition tag: "+preconditionID);
         addNewLine(featureFileLines,preconditionLine,formatPreconditionTag(preconditionID));
         return featureFileLines
     }
@@ -116,7 +122,7 @@ class XRayTagger {
     }
 
     fun isFileTagged(featureFileLines: List<String>, testOrPreconditionID:String):Boolean{
-        println("Checking if file tagged: "+testOrPreconditionID)
+        logger.info("Checking if file tagged: "+testOrPreconditionID)
         return featureFileLines.filter{line->line.contains(testOrPreconditionID)}.isNotEmpty();
     }
 
@@ -125,7 +131,7 @@ class XRayTagger {
         for (line in unzippedFileLines){
             // Looking for Scenario instead of Scenario: so we also capture scenario outlines
             if(line.contains("Scenario")){
-                println("Scenario found:"+line)
+                logger.debug("Scenario found: "+line)
                 scenario = line
                 return scenario;
             }
@@ -138,7 +144,7 @@ class XRayTagger {
         var precondition = "";
         for (line in unzippedFileLines){
             if(line.contains("Background:")){
-                println("Background found:"+line)
+                logger.debug("Background found: "+line)
                 precondition = line
                 return precondition;
             }
