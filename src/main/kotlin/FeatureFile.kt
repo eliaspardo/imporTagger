@@ -38,7 +38,7 @@ data class FeatureFile(val name: String, val path: String) {
             logger.info("Error importing file: "+response);
             isError = true
         }else{
-            logger.info("Import OK");
+            logger.info("Import and tagging OK");
             isImported = true
         }
     }

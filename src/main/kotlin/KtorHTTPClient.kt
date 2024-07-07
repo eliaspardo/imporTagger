@@ -1,5 +1,6 @@
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -15,7 +16,7 @@ class KtorHTTPClient {
         private val timeout:Long = 15000
         fun getHTTPClientWithJSONParsing(loginToken: String): HttpClient {
             if (httpClient!=null) return this.httpClient
-            else return HttpClient(CIO.create{requestTimeout = timeout}) {
+            else return HttpClient(CIO) {
                 install(Logging) {
                     logger = Logger.DEFAULT
                     if (kotlinLogger.isDebugEnabled) level = LogLevel.ALL
@@ -33,6 +34,9 @@ class KtorHTTPClient {
                         prettyPrint = true
                         isLenient = true
                     })
+                }
+                install(HttpTimeout) {
+                    requestTimeoutMillis = timeout
                 }
             }
         }

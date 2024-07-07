@@ -78,7 +78,7 @@ class XRayTagger {
 
 
     fun addTestTag(scenarioLine: Int, testID: String, isPreviousLineTagged: Boolean, featureFileLines: MutableList<String>):MutableList<String>{
-        logger.info("Adding test tag: "+testID);
+        logger.debug("Adding test tag: "+testID);
         if(isPreviousLineTagged){
             // Append to scenarioLine-1
             logger.debug("Adding tag to existing tags");
@@ -92,7 +92,7 @@ class XRayTagger {
     }
 
     fun addPreconditionTag(preconditionLine: Int, preconditionID: String, featureFileLines: MutableList<String>):MutableList<String>{
-        logger.info("Adding precondition tag: "+preconditionID);
+        logger.debug("Adding precondition tag: "+preconditionID);
         addNewLine(featureFileLines,preconditionLine,formatPreconditionTag(preconditionID));
         return featureFileLines
     }
