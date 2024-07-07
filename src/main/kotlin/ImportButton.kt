@@ -10,6 +10,7 @@ fun ImportButton(onImportClick: () -> () -> Unit) {
         Button(onClick = onImportClick(), enabled = ImporterViewModel.isImportButtonEnabled()) {
             Text("Import")
         }
+        // TODO Review this
         /*if(!importResponseBody.errors.isEmpty()){
             Text(importResponseBody.errors.toString())
         }*/

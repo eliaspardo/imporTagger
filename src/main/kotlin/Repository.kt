@@ -14,9 +14,14 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import java.io.File
 
+
+private val logger = KotlinLogging.logger {}
+
 suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatusCode {
+    logger.info("Logging into XRay")
     val client = HttpClient(CIO)
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
         contentType(ContentType.Application.Json)
@@ -35,47 +40,53 @@ suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatu
 }
 
 suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
+    logger.info("Importing file to XRay")
     val client = getHTTPClientWithJSONParsing(loginToken);
-    val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
+    try{
+        val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
 
-        setBody(
-            MultiPartFormDataContent(
-                formData {
-                    append("file", java.io.File(featureFilePath).readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "application/octet-stream")
-                        append(HttpHeaders.ContentDisposition,"filename="+java.io.File(featureFilePath))
-                    })
-                    append("testInfo", java.io.File(ImporterViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "application/octet-stream")
-                        append(HttpHeaders.ContentDisposition,"filename="+ImporterViewModel.testInfoFile.value)
-                    })
-                },
-                boundary="boundary"
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append("file", java.io.File(featureFilePath).readBytes(), Headers.build {
+                            append(HttpHeaders.ContentType, "application/octet-stream")
+                            append(HttpHeaders.ContentDisposition,"filename="+java.io.File(featureFilePath))
+                        })
+                        append("testInfo", java.io.File(ImporterViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
+                            append(HttpHeaders.ContentType, "application/octet-stream")
+                            append(HttpHeaders.ContentDisposition,"filename="+ImporterViewModel.testInfoFile.value)
+                        })
+                    },
+                    boundary="boundary"
+                )
             )
-        )
-        onUpload { bytesSentTotal, contentLength ->
-            println("Sent $bytesSentTotal bytes from $contentLength")
+            onUpload { bytesSentTotal, contentLength ->
+                logger.debug("Sent $bytesSentTotal bytes from $contentLength")
+            }
         }
-    }
+        importResponseCode = response.status.value
+        importResponseMessage = response.status.description
+        importResponseBody = response.body()
 
-    importResponseCode = response.status.value
-    importResponseMessage = response.status.description
-    importResponseBody = response.body()
+        if(!importResponseBody.errors.isEmpty()){
+            logger.warn("There are errors")
+            logger.warn(importResponseBody.errors.toString())
+        }
+        else{
+            logger.debug("There are no errors")
+            val fileManager = FileManager()
+            val xRayTagger = XRayTagger()
+            if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
+            if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(featureFilePath, importResponseBody.updatedOrCreatedPreconditions, fileManager, xRayTagger)
+        }
 
-    if(!importResponseBody.errors.isEmpty()){
-        println("There are errors")
-        println(importResponseBody.errors.toString())
+        client.close()
+        return response.status
+    }catch(e: Throwable){
+        // TODO Handle errors here - e.g. timeouts (mock with "http://www.google.com:81/")
+        logger.error("Caught "+e)
+        return HttpStatusCode.NotFound
     }
-    else{
-        println("There are no errors")
-        val fileManager = FileManager()
-        val xRayTagger = XRayTagger()
-        if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
-        if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(featureFilePath, importResponseBody.updatedOrCreatedPreconditions, fileManager, xRayTagger)
-    }
-
-    client.close()
-    return response.status
 }
 
 suspend fun processUpdatedOrCreatedTests(
@@ -84,13 +95,13 @@ suspend fun processUpdatedOrCreatedTests(
     fileManager: FileManager,
     xRayTagger: XRayTagger
 ) {
-    println("Processing Tests")
+    logger.info("Processing Tests for "+featureFilePath)
     val featureFileLines = fileManager.readFile(featureFilePath)
     for (test in updatedOrCreatedTests){
         val testID = test.key
         // Check if feature file is already tagged, if not, start tagging process
         if(!xRayTagger.isFileTagged(featureFileLines,testID)) {
-            println("File is not tagged")
+            logger.info("File is not tagged")
             // Download zip file to know which scenario needs tagging
             var zipFile = downloadCucumberTestsFromXRay(testID)
             val unzippedTestFile = fileManager.unzipFile(zipFile)
@@ -113,13 +124,13 @@ suspend fun processUpdatedOrCreatedPreconditions(
     updatedOrCreatedPreconditions: List<Precondition>,
     fileManager: FileManager,
     xRayTagger: XRayTagger) {
-    println("Processing Preconditions")
+    logger.info("Processing Preconditions for "+featureFilePath)
     // This looks as duplicated code, but we need to re-read the file in case the processUpdatedOrCreatedTests has written to file
     val featureFileLines = fileManager.readFile(featureFilePath)
     for (precondition in updatedOrCreatedPreconditions){
         val preconditionID = precondition.key
         if(!xRayTagger.isFileTagged(featureFileLines,preconditionID)) {
-            println("File is not tagged")
+            logger.info("File is not tagged")
             // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
             val featureFileLinesTagged = xRayTagger.tagPrecondition(preconditionID, featureFileLines)
             fileManager.writeFile(featureFilePath, featureFileLinesTagged)
@@ -130,19 +141,20 @@ suspend fun processUpdatedOrCreatedPreconditions(
 }
 
 suspend fun downloadCucumberTestsFromXRay(testID: String): File {
+    logger.info("Downloading Cucumber Test from Xray "+testID);
     val client = getHTTPClientWithJSONParsing(loginToken);
     val file = File.createTempFile("xrayImporter", ".zip")
     runBlocking {
         val httpResponse: HttpResponse = client.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys="+testID) {
             onDownload { bytesSentTotal, contentLength ->
-                println("Received $bytesSentTotal bytes from $contentLength")
+                logger.debug("Received $bytesSentTotal bytes from $contentLength")
             }
         }
         // TODO Handle error cases - Eg. Key doesn't exist.
         val responseBody: ByteArray = httpResponse.body()
         file.writeBytes(responseBody)
-        println("XRay exported ZIP file saved to ${file.path}")
-        println(httpResponse.status.value.toString()+httpResponse.status.description)
+        logger.info("XRay exported ZIP file saved to ${file.path}")
+        logger.debug(httpResponse.status.value.toString()+" "+httpResponse.status.description)
     }
     client.close()
     return file.absoluteFile
