@@ -25,3 +25,12 @@ jobs:
       # Runs Gradle Build
       - name: Run Build
         run: ./gradlew build
+
+      - name: Store reports
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
