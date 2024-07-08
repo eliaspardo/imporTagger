@@ -16,13 +16,13 @@ internal class XRayTaggerTest{
     }
 
     companion object {
-        var expectedScenario = "Scenario: XMS Automation - Xtadium - Config - Configuration creation successfull"
-        var expectedTrimmedScenario = "Scenario: XMS Automation - Xtadium - Config - Configuration creation successfull".replace(" ","").replace("\t", "")
-        var expectedTrimmedScenarioOutline = "Scenario Outline: AppLayout URL Parameters Status Codes".replace(" ","").replace("\t", "")
-        var expectedPrecondition1 = "Background: Precondition - BaseURL"
-        var expectedPrecondition2 = "Background: Create app - Add config"
-        var expectedTrimmedPrecondition1 = "Background: Precondition - BaseURL".replace(" ","").replace("\t", "")
-        var expectedTrimmedPrecondition2 = "Background: Create app - Add config".replace(" ","").replace("\t", "")
+        var expectedScenario = "Scenario: TEST-2806"
+        var expectedTrimmedScenario = "Scenario: TEST-2806".replace(" ","").replace("\t", "")
+        var expectedTrimmedScenarioOutline = "Scenario Outline: TEST-3470 Scenario Outline".replace(" ","").replace("\t", "")
+        var expectedPrecondition1 = "Background: TEST-3436"
+        var expectedPrecondition2 = "Background: TEST-4705"
+        var expectedTrimmedPrecondition1 = expectedPrecondition1.replace(" ","").replace("\t", "")
+        var expectedTrimmedPrecondition2 = expectedPrecondition2.replace(" ","").replace("\t", "")
         @JvmStatic
         fun featureFilesTags() = listOf(
             Arguments.of("src/test/resources/fileTEST-2806WithoutTag.feature", "TEST-2806", false),

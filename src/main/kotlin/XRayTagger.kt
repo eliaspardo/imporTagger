@@ -1,7 +1,7 @@
 import mu.KotlinLogging
 class XRayTagger {
     val testTag = "@TEST_"
-    val preconditionTag = "#PRECON_"
+    val preconditionTag = "# PRECON_"
     val preconditionPrefix = "Background"
     private val logger = KotlinLogging.logger {}
 
@@ -123,7 +123,7 @@ class XRayTagger {
 
     fun isFileTagged(featureFileLines: List<String>, testOrPreconditionID:String):Boolean{
         logger.info("Checking if file tagged: "+testOrPreconditionID)
-        return featureFileLines.filter{line->line.contains(testOrPreconditionID)}.isNotEmpty();
+        return featureFileLines.filter{line->(line.contains(formatTestTag(testOrPreconditionID))||line.contains(formatPreconditionTag(testOrPreconditionID)))}.isNotEmpty();
     }
 
     fun getScenario(unzippedFileLines: List<String>):String{
