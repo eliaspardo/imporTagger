@@ -30,19 +30,6 @@ data class FeatureFile(val name: String, val path: String) {
         return name.substringAfterLast('.', "").equals("feature")
     }
 
-    // TODO Review. We probably want this method to be renamed and separating the import and tagging of files
-    suspend fun import() {
-        logger.info("Importing file: "+path);
-        val response = importFileToXray(path)
-        if(response!= HttpStatusCode.OK){
-            logger.info("Error importing file: "+response);
-            isError = true
-        }else{
-            logger.info("Import and tagging OK");
-            isImported = true
-        }
-    }
-
     val onCheckedChange: (checked: Boolean) -> Unit = { checked ->
         isChecked = checked
     }

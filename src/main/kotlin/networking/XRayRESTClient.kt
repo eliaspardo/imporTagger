@@ -4,17 +4,19 @@ import ImporterViewModel.importResponseMessage
 import ImporterViewModel.loginResponseCode
 import ImporterViewModel.loginResponseMessage
 import ImporterViewModel.loginToken
-import KtorHTTPClient.Companion.getHTTPClientWithJSONParsing
-import io.ktor.client.*
+import util.NetworkError
+import util.Result
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.util.network.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerializationException
 import mu.KotlinLogging
+import networking.createKtorHTTPClient
 import java.io.File
 
 
@@ -22,7 +24,7 @@ private val logger = KotlinLogging.logger {}
 
 suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatusCode {
     logger.info("Logging into XRay")
-    val client = HttpClient(CIO)
+    val client = createKtorHTTPClient();
     val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
         contentType(ContentType.Application.Json)
         setBody("{\n" +
@@ -41,10 +43,9 @@ suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatu
 
 suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
     logger.info("Importing file to XRay")
-    val client = getHTTPClientWithJSONParsing(loginToken);
+    val client = createKtorHTTPClient(loginToken);
     try{
         val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
-
             setBody(
                 MultiPartFormDataContent(
                     formData {
@@ -73,6 +74,7 @@ suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
             logger.warn(importResponseBody.errors.toString())
         }
         else{
+            // TODO This probably shouldn't go here
             logger.debug("There are no errors")
             val fileManager = FileManager()
             val xRayTagger = XRayTagger()
@@ -86,6 +88,62 @@ suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
         // TODO Handle errors here - e.g. timeouts (mock with "http://www.google.com:81/")
         logger.error("Caught "+e)
         return HttpStatusCode.NotFound
+    }
+}
+// TODO Second version of importFileToXray returning correct types, delegating handling to ImproterViewModel.
+suspend fun importFileToXray2(featureFilePath: String): Result<ImportResponse, NetworkError> {
+    logger.info("Importing file to XRay")
+    val client = createKtorHTTPClient(loginToken);
+    try{
+        val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append("file", File(featureFilePath).readBytes(), Headers.build {
+                            append(HttpHeaders.ContentType, "application/octet-stream")
+                            append(HttpHeaders.ContentDisposition,"filename="+ File(featureFilePath))
+                        })
+                        append("testInfo", File(ImporterViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
+                            append(HttpHeaders.ContentType, "application/octet-stream")
+                            append(HttpHeaders.ContentDisposition,"filename="+ImporterViewModel.testInfoFile.value)
+                        })
+                    },
+                    boundary="boundary"
+                )
+            )
+            onUpload { bytesSentTotal, contentLength ->
+                logger.debug("Sent $bytesSentTotal bytes from $contentLength")
+            }
+        }
+        importResponseCode = response.status.value
+        importResponseMessage = response.status.description
+        importResponseBody = response.body()
+
+        client.close()
+    // TODO Handle errors here - e.g. timeouts (mock with "http://www.google.com:81/")
+    }catch(e: UnresolvedAddressException) {
+        return Result.Error(NetworkError.NO_INTERNET)
+    } catch(e: SerializationException) {
+        return Result.Error(NetworkError.SERIALIZATION)
+    }
+
+    return when (importResponseCode){
+        in 200..299 -> {
+            if(!importResponseBody.errors.isEmpty()){
+                logger.warn("There are errors")
+                logger.warn(importResponseBody.errors.toString())
+            }else{
+                logger.debug("There are no errors importing to XRay")
+            }
+            Result.Success(importResponseBody)
+        }
+        401 -> Result.Error(NetworkError.UNAUTHORIZED)
+        404 -> Result.Error(NetworkError.NOT_FOUND)
+        409 -> Result.Error(NetworkError.CONFLICT)
+        408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
+        413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+        in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
+        else -> Result.Error(NetworkError.UNKNOWN)
     }
 }
 
@@ -142,7 +200,7 @@ suspend fun processUpdatedOrCreatedPreconditions(
 
 suspend fun downloadCucumberTestsFromXRay(testID: String): File {
     logger.info("Downloading Cucumber Test from Xray "+testID);
-    val client = getHTTPClientWithJSONParsing(loginToken);
+    val client = createKtorHTTPClient(loginToken);
     val file = File.createTempFile("xrayImporter", ".zip")
     runBlocking {
         val httpResponse: HttpResponse = client.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys="+testID) {
@@ -169,6 +227,6 @@ suspend fun main(args: Array<String>) {
     val testInfoFile = File(testInfoFilePath)
     ImporterViewModel.onTestInfoFileChooserClose(testInfoFile)
     logInOnXRay("","");
-    file.import();
+    //file.import();
 }
 

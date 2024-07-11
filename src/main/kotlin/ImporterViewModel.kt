@@ -3,8 +3,11 @@ import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
 
 object ImporterViewModel {
+    private val logger = KotlinLogging.logger {}
+
     var featureFiles = mutableStateListOf<FeatureFile>()
         private set
     var testInfoFile = mutableStateOf<java.io.File?>(null)
@@ -161,7 +164,28 @@ object ImporterViewModel {
         launch {
             percentageProcessed = 0f
             featureFiles.map{ file-> if(file.isChecked){
-                file.import();
+
+                // TODO Review. We probably want importFileToXray to separate import and tagging of files
+                // TODO Logic of tagging should go here processUpdatedOrCreatedTests/processUpdatedOrCreatedPreconditions
+
+                logger.info("Importing file: "+file.path);
+                val response = importFileToXray(file.path)
+
+                if(response!= HttpStatusCode.OK){
+                    logger.info("Error importing file: "+response);
+                    file.isError = true
+                }else{
+                    logger.info("Import and tagging OK");
+                    file.isImported = true
+                }
+                /*
+                importResponseBody.errors.toString()
+                 val fileManager = FileManager()
+                val xRayTagger = XRayTagger()
+                if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
+                if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(featureFilePath, importResponseBody.updatedOrCreatedPreconditions, fileManager, xRayTagger)
+
+                 */
                 calculatePercentageProcessed();
                 if(file.isImported){file.isChecked=false}else{
                     file.isError=true
