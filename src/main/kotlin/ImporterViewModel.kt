@@ -4,6 +4,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import util.onError
+import util.onSuccess
 
 object ImporterViewModel {
     private val logger = KotlinLogging.logger {}
@@ -151,6 +153,9 @@ object ImporterViewModel {
         }
     }
 
+    // TODO Is this really needed? Can we logout? Does it revoke the token?
+    // In any case it would be nice to have, if we want to switch users.
+    // https://github.com/eliaspardo/xray-importer/issues/15
     fun logOut() = GlobalScope.launch {
         launch {
             delay(1000L)
@@ -165,27 +170,22 @@ object ImporterViewModel {
             percentageProcessed = 0f
             featureFiles.map{ file-> if(file.isChecked){
 
-                // TODO Review. We probably want importFileToXray to separate import and tagging of files
-                // TODO Logic of tagging should go here processUpdatedOrCreatedTests/processUpdatedOrCreatedPreconditions
-
                 logger.info("Importing file: "+file.path);
-                val response = importFileToXray(file.path)
 
-                if(response!= HttpStatusCode.OK){
-                    logger.info("Error importing file: "+response);
-                    file.isError = true
-                }else{
-                    logger.info("Import and tagging OK");
+                importFileToXray(file.path).onSuccess {
+                    logger.info("Import and tagging OK. Starting Tagging.");
+
+                    // On Success start tagging tests and preconditions
+                    val fileManager = FileManager()
+                    val xRayTagger = XRayTagger()
+                    if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager)
+                    if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
+
                     file.isImported = true
+                }.onError {
+                    logger.info("Error importing file: "+it);
+                    file.isError = true
                 }
-                /*
-                importResponseBody.errors.toString()
-                 val fileManager = FileManager()
-                val xRayTagger = XRayTagger()
-                if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
-                if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(featureFilePath, importResponseBody.updatedOrCreatedPreconditions, fileManager, xRayTagger)
-
-                 */
                 calculatePercentageProcessed();
                 if(file.isImported){file.isChecked=false}else{
                     file.isError=true

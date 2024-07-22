@@ -1,4 +1,6 @@
 import mu.KotlinLogging
+import java.io.File
+
 class XRayTagger {
     val testTag = "@TEST_"
     val preconditionTag = "# PRECON_"
@@ -151,5 +153,55 @@ class XRayTagger {
         }
         // TODO This should return an exception
         return precondition;
+    }
+
+    suspend fun processUpdatedOrCreatedTests(
+        featureFilePath:String,
+        updatedOrCreatedTests: List<Test>,
+        fileManager: FileManager,
+    ) {
+        logger.info("Processing Tests for "+featureFilePath)
+        val featureFileLines = fileManager.readFile(featureFilePath)
+        for (test in updatedOrCreatedTests){
+            val testID = test.key
+            // Check if feature file is already tagged, if not, start tagging process
+            if(!isFileTagged(featureFileLines,testID)) {
+                logger.info("File is not tagged")
+                // Download zip file to know which scenario needs tagging
+                var zipFile = downloadCucumberTestsFromXRay(testID)
+                val unzippedTestFile = fileManager.unzipFile(zipFile)
+                fileManager.deleteFile(zipFile)
+
+                // Get Scenario from extracted file
+                val unzippedFileLines = fileManager.readFile(unzippedTestFile)
+                val scenario = getScenario(unzippedFileLines)
+                fileManager.deleteFile(File(unzippedTestFile))
+
+                // Find Scenario in featureFile and tag it
+                val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
+                fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+            }
+        }
+    }
+
+    suspend fun processUpdatedOrCreatedPreconditions(
+        featureFilePath:String,
+        updatedOrCreatedPreconditions: List<Precondition>,
+        fileManager: FileManager,
+        ) {
+        logger.info("Processing Preconditions for "+featureFilePath)
+        // This looks as duplicated code, but we need to re-read the file in case the processUpdatedOrCreatedTests has written to file
+        val featureFileLines = fileManager.readFile(featureFilePath)
+        for (precondition in updatedOrCreatedPreconditions){
+            val preconditionID = precondition.key
+            if(!isFileTagged(featureFileLines,preconditionID)) {
+                logger.info("File is not tagged")
+                // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
+                val featureFileLinesTagged = tagPrecondition(preconditionID, featureFileLines)
+                fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+            }
+
+        }
+
     }
 }

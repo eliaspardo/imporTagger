@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerializationException
 import mu.KotlinLogging
 import networking.createKtorHTTPClient
+import util.XRayError
 import java.io.File
 
 
@@ -41,57 +42,8 @@ suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): HttpStatu
     return response.status
 }
 
-suspend fun importFileToXray(featureFilePath: String): HttpStatusCode {
-    logger.info("Importing file to XRay")
-    val client = createKtorHTTPClient(loginToken);
-    try{
-        val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
-            setBody(
-                MultiPartFormDataContent(
-                    formData {
-                        append("file", java.io.File(featureFilePath).readBytes(), Headers.build {
-                            append(HttpHeaders.ContentType, "application/octet-stream")
-                            append(HttpHeaders.ContentDisposition,"filename="+java.io.File(featureFilePath))
-                        })
-                        append("testInfo", java.io.File(ImporterViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
-                            append(HttpHeaders.ContentType, "application/octet-stream")
-                            append(HttpHeaders.ContentDisposition,"filename="+ImporterViewModel.testInfoFile.value)
-                        })
-                    },
-                    boundary="boundary"
-                )
-            )
-            onUpload { bytesSentTotal, contentLength ->
-                logger.debug("Sent $bytesSentTotal bytes from $contentLength")
-            }
-        }
-        importResponseCode = response.status.value
-        importResponseMessage = response.status.description
-        importResponseBody = response.body()
-
-        if(!importResponseBody.errors.isEmpty()){
-            logger.warn("There are errors")
-            logger.warn(importResponseBody.errors.toString())
-        }
-        else{
-            // TODO This probably shouldn't go here
-            logger.debug("There are no errors")
-            val fileManager = FileManager()
-            val xRayTagger = XRayTagger()
-            if(!importResponseBody.updatedOrCreatedTests.isEmpty()) processUpdatedOrCreatedTests(featureFilePath, importResponseBody.updatedOrCreatedTests, fileManager, xRayTagger)
-            if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) processUpdatedOrCreatedPreconditions(featureFilePath, importResponseBody.updatedOrCreatedPreconditions, fileManager, xRayTagger)
-        }
-
-        client.close()
-        return response.status
-    }catch(e: Throwable){
-        // TODO Handle errors here - e.g. timeouts (mock with "http://www.google.com:81/")
-        logger.error("Caught "+e)
-        return HttpStatusCode.NotFound
-    }
-}
-// TODO Second version of importFileToXray returning correct types, delegating handling to ImproterViewModel.
-suspend fun importFileToXray2(featureFilePath: String): Result<ImportResponse, NetworkError> {
+// Import Feature File To XRay
+suspend fun importFileToXray(featureFilePath: String): Result<ImportResponse, NetworkError> {
     logger.info("Importing file to XRay")
     val client = createKtorHTTPClient(loginToken);
     try{
@@ -132,6 +84,7 @@ suspend fun importFileToXray2(featureFilePath: String): Result<ImportResponse, N
             if(!importResponseBody.errors.isEmpty()){
                 logger.warn("There are errors")
                 logger.warn(importResponseBody.errors.toString())
+                Result.Error(XRayError.UNKNOWN)
             }else{
                 logger.debug("There are no errors importing to XRay")
             }
@@ -145,57 +98,6 @@ suspend fun importFileToXray2(featureFilePath: String): Result<ImportResponse, N
         in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
         else -> Result.Error(NetworkError.UNKNOWN)
     }
-}
-
-suspend fun processUpdatedOrCreatedTests(
-    featureFilePath:String,
-    updatedOrCreatedTests: List<Test>,
-    fileManager: FileManager,
-    xRayTagger: XRayTagger
-) {
-    logger.info("Processing Tests for "+featureFilePath)
-    val featureFileLines = fileManager.readFile(featureFilePath)
-    for (test in updatedOrCreatedTests){
-        val testID = test.key
-        // Check if feature file is already tagged, if not, start tagging process
-        if(!xRayTagger.isFileTagged(featureFileLines,testID)) {
-            logger.info("File is not tagged")
-            // Download zip file to know which scenario needs tagging
-            var zipFile = downloadCucumberTestsFromXRay(testID)
-            val unzippedTestFile = fileManager.unzipFile(zipFile)
-            fileManager.deleteFile(zipFile)
-
-            // Get Scenario from extracted file
-            val unzippedFileLines = fileManager.readFile(unzippedTestFile)
-            val scenario = xRayTagger.getScenario(unzippedFileLines)
-            fileManager.deleteFile(File(unzippedTestFile))
-
-            // Find Scenario in featureFile and tag it
-            val featureFileLinesTagged = xRayTagger.tagTest(scenario, testID, featureFileLines)
-            fileManager.writeFile(featureFilePath, featureFileLinesTagged)
-        }
-    }
-}
-
-suspend fun processUpdatedOrCreatedPreconditions(
-    featureFilePath:String,
-    updatedOrCreatedPreconditions: List<Precondition>,
-    fileManager: FileManager,
-    xRayTagger: XRayTagger) {
-    logger.info("Processing Preconditions for "+featureFilePath)
-    // This looks as duplicated code, but we need to re-read the file in case the processUpdatedOrCreatedTests has written to file
-    val featureFileLines = fileManager.readFile(featureFilePath)
-    for (precondition in updatedOrCreatedPreconditions){
-        val preconditionID = precondition.key
-        if(!xRayTagger.isFileTagged(featureFileLines,preconditionID)) {
-            logger.info("File is not tagged")
-            // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
-            val featureFileLinesTagged = xRayTagger.tagPrecondition(preconditionID, featureFileLines)
-            fileManager.writeFile(featureFilePath, featureFileLinesTagged)
-        }
-
-    }
-
 }
 
 suspend fun downloadCucumberTestsFromXRay(testID: String): File {
