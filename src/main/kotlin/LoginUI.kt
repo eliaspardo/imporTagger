@@ -1,5 +1,3 @@
-import ImporterViewModel.loginResponseCode
-import ImporterViewModel.loginResponseMessage
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -25,7 +23,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun LoginBox(
     onLoginChanged: (username: String, password:String) -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    importerViewModel: ImporterViewModel
 ) {
     var isClientSecretVisible by rememberSaveable { mutableStateOf(false) }
     Column(
@@ -38,8 +37,8 @@ fun LoginBox(
             //Text(text = "XRay Login", fontSize = 25.sp)
             val focusManager = LocalFocusManager.current
             OutlinedTextField(
-                value = ImporterViewModel.xrayClientID,
-                onValueChange = { onLoginChanged(it, ImporterViewModel.xrayClientSecret) },
+                value = importerViewModel.xrayClientID,
+                onValueChange = { onLoginChanged(it, importerViewModel.xrayClientSecret) },
                 label = { Text("XRay Client ID") },
                 modifier = Modifier.padding(5.dp)
                 .onKeyEvent {
@@ -47,7 +46,7 @@ fun LoginBox(
                         focusManager.moveFocus(FocusDirection.Next)
                         // TODO Tab goes to next field, but writes tab, removing it here, not very elegant
                         // TODO When doing Alt+Tab the last character is deleted
-                        onLoginChanged(ImporterViewModel.xrayClientID.substring(0, maxOf(ImporterViewModel.xrayClientID.length - 1,0)), ImporterViewModel.xrayClientSecret)
+                        onLoginChanged(importerViewModel.xrayClientID.substring(0, maxOf(importerViewModel.xrayClientID.length - 1,0)), importerViewModel.xrayClientSecret)
                         true
                     } else {
                         false
@@ -55,14 +54,14 @@ fun LoginBox(
                 }
             )
             OutlinedTextField(
-                value = ImporterViewModel.xrayClientSecret,
-                onValueChange = { onLoginChanged(ImporterViewModel.xrayClientID, it) },
+                value = importerViewModel.xrayClientSecret,
+                onValueChange = { onLoginChanged(importerViewModel.xrayClientID, it) },
                 label = { Text("XRay Client Secret") },
                 modifier = Modifier.padding(5.dp)
                 .onKeyEvent {
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
-                        onLoginChanged(ImporterViewModel.xrayClientID, ImporterViewModel.xrayClientSecret.substring(0, maxOf(ImporterViewModel.xrayClientSecret.length - 1,0)))
+                        onLoginChanged(importerViewModel.xrayClientID, importerViewModel.xrayClientSecret.substring(0, maxOf(importerViewModel.xrayClientSecret.length - 1,0)))
                         true
                     } else {
                         false
@@ -85,19 +84,19 @@ fun LoginBox(
                         )
                     }
                 },
-                isError = ImporterViewModel.isLoginError()
+                isError = importerViewModel.isLoginError()
             )
         }
-        if (ImporterViewModel.appState != AppState.LOGGING_IN) {
-            if (ImporterViewModel.isLoginError()) {
+        if (importerViewModel.appState != AppState.LOGGING_IN) {
+            if (importerViewModel.isLoginError()) {
                 Text(
-                    text = "Login Error. Error Code: "+loginResponseCode+" "+loginResponseMessage,
+                    text = "Login Error. Error Code: "+importerViewModel.loginResponseCode+" "+importerViewModel.loginResponseMessage,
                     color = MaterialTheme.colors.error,
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier.padding(start = 16.dp, top = 0.dp)
                 )
             }
-            Button(onClick = onLoginClick, enabled = ImporterViewModel.isLoginButtonEnabled()) {
+            Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
                 Text("Log In")
             }
         } else {
@@ -107,14 +106,14 @@ fun LoginBox(
 }
 
 @Composable
-fun LogoutBox(onLogoutClick: () -> Unit) {
+fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ){
-        Text(text = "Logged in as ${ImporterViewModel.xrayClientID}", fontSize = 25.sp)
-        if(ImporterViewModel.appState!=AppState.LOGGING_OUT) {
-            Button(onClick = onLogoutClick, enabled = ImporterViewModel.isLogoutButtonEnabled()) {
+        Text(text = "Logged in as ${importerViewModel.xrayClientID}", fontSize = 25.sp)
+        if(importerViewModel.appState!=AppState.LOGGING_OUT) {
+            Button(onClick = onLogoutClick, enabled = importerViewModel.isLogoutButtonEnabled()) {
                 Text("Log Out")
             }
         }else {
@@ -127,12 +126,13 @@ fun LogoutBox(onLogoutClick: () -> Unit) {
 fun XRayLoginBox(
     onLoginChanged: (username: String, password: String) -> Unit,
     onLoginClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    importerViewModel: ImporterViewModel
 ) {
-    if(ImporterViewModel.loginState==LoginState.LOGGED_OUT||ImporterViewModel.loginState==LoginState.ERROR){
-        LoginBox(onLoginChanged, onLoginClick)
+    if(importerViewModel.loginState==LoginState.LOGGED_OUT||importerViewModel.loginState==LoginState.ERROR){
+        LoginBox(onLoginChanged, onLoginClick,importerViewModel)
     }else{
-        LogoutBox(onLogoutClick)
+        LogoutBox(onLogoutClick,importerViewModel)
     }
 }
 

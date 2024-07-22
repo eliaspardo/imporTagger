@@ -1,4 +1,5 @@
 import mu.KotlinLogging
+import networking.IXRayRESTClient
 import java.io.File
 
 class XRayTagger {
@@ -159,6 +160,8 @@ class XRayTagger {
         featureFilePath:String,
         updatedOrCreatedTests: List<Test>,
         fileManager: FileManager,
+        ixRayRESTClient: IXRayRESTClient,
+        importerViewModel: ImporterViewModel
     ) {
         logger.info("Processing Tests for "+featureFilePath)
         val featureFileLines = fileManager.readFile(featureFilePath)
@@ -168,7 +171,7 @@ class XRayTagger {
             if(!isFileTagged(featureFileLines,testID)) {
                 logger.info("File is not tagged")
                 // Download zip file to know which scenario needs tagging
-                var zipFile = downloadCucumberTestsFromXRay(testID)
+                var zipFile = ixRayRESTClient.downloadCucumberTestsFromXRay(testID,importerViewModel)
                 val unzippedTestFile = fileManager.unzipFile(zipFile)
                 fileManager.deleteFile(zipFile)
 
@@ -188,7 +191,7 @@ class XRayTagger {
         featureFilePath:String,
         updatedOrCreatedPreconditions: List<Precondition>,
         fileManager: FileManager,
-        ) {
+    ) {
         logger.info("Processing Preconditions for "+featureFilePath)
         // This looks as duplicated code, but we need to re-read the file in case the processUpdatedOrCreatedTests has written to file
         val featureFileLines = fileManager.readFile(featureFilePath)

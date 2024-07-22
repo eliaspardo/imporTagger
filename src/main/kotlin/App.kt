@@ -12,26 +12,29 @@ import androidx.compose.ui.window.application
 
 fun main() = application {
     val icon = painterResource("icon.png")
+    val xRayRESTClient = XRayRESTClient()
+    val importerViewModel = ImporterViewModel(xRayRESTClient)
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
         Column(Modifier.fillMaxWidth(), Arrangement.Center) {
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {
                 XRayLoginBox(
-                    ImporterViewModel.onLoginChanged,
-                    ImporterViewModel.onLoginClick,
-                    ImporterViewModel.onLogoutClick
+                    importerViewModel.onLoginChanged,
+                    importerViewModel.onLoginClick,
+                    importerViewModel.onLogoutClick,
+                    importerViewModel
                 )
             }
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-                FeatureFileChooserUI(ImporterViewModel.onFeatureFileChooserClick, ImporterViewModel.onFeatureFileChooserClose)
-                TestInfoFileChooserUI(ImporterViewModel.onTestInfoFileChooserClick, ImporterViewModel.onTestInfoFileChooserClose)
+                FeatureFileChooserUI(importerViewModel.onFeatureFileChooserClick, importerViewModel.onFeatureFileChooserClose,importerViewModel)
+                TestInfoFileChooserUI(importerViewModel.onTestInfoFileChooserClick, importerViewModel.onTestInfoFileChooserClose, importerViewModel)
             }
-            if(ImporterViewModel.testInfoFile.value!=null){
-                Text(text = "TestInfo.json: "+ImporterViewModel.testInfoFile.value)
+            if(importerViewModel.testInfoFile.value!=null){
+                Text(text = "TestInfo.json: "+importerViewModel.testInfoFile.value)
             }
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-                ImportButton { ImporterViewModel.onImportClick }
+                ImportButton ({ importerViewModel.onImportClick },importerViewModel)
             }
-            FeatureFileListUI(ImporterViewModel.onRemoveFile)
+            FeatureFileListUI(importerViewModel.onRemoveFile,importerViewModel)
         }
     }
 }

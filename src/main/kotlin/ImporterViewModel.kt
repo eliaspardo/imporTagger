@@ -4,12 +4,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import networking.IXRayRESTClient
 import util.onError
 import util.onSuccess
 
-object ImporterViewModel {
-    private val logger = KotlinLogging.logger {}
+class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
 
+    private val logger = KotlinLogging.logger {}
     var featureFiles = mutableStateListOf<FeatureFile>()
         private set
     var testInfoFile = mutableStateOf<java.io.File?>(null)
@@ -138,7 +139,7 @@ object ImporterViewModel {
     fun logIn() = GlobalScope.launch {
         launch {
             delay(1000L)
-            if (logInOnXRay(xrayClientID,xrayClientSecret) == HttpStatusCode(200,"OK")){
+            if (ixRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel) == HttpStatusCode(200,"OK")){
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 loginState = LoginState.LOGGED_IN
@@ -172,13 +173,13 @@ object ImporterViewModel {
 
                 logger.info("Importing file: "+file.path);
 
-                importFileToXray(file.path).onSuccess {
+                ixRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
                     logger.info("Import and tagging OK. Starting Tagging.");
 
                     // On Success start tagging tests and preconditions
                     val fileManager = FileManager()
                     val xRayTagger = XRayTagger()
-                    if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager)
+                    if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, ixRayRESTClient, this@ImporterViewModel)
                     if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
 
                     file.isImported = true
