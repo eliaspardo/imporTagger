@@ -139,12 +139,12 @@ class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
     fun logIn() = GlobalScope.launch {
         launch {
             delay(1000L)
-            if (ixRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel) == HttpStatusCode(200,"OK")){
+            ixRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 loginState = LoginState.LOGGED_IN
                 xrayClientSecret=""
-            }else{
+            }.onError {
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 // TODO This is not working. Works with LoginState.LOGGED_OUT.

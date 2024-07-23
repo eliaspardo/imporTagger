@@ -17,24 +17,42 @@ import java.io.File
 
 class XRayRESTClient: IXRayRESTClient{
     private val logger = KotlinLogging.logger {}
-
-    override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String, importerViewModel: ImporterViewModel): HttpStatusCode {
+    override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String, importerViewModel: ImporterViewModel): Result<LoginResponse, NetworkError> {
         logger.info("Logging into XRay")
         val client = createKtorHTTPClient();
-        val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
-            contentType(ContentType.Application.Json)
-            setBody("{\n" +
-                    "    \"client_id\": \""+xrayClientID+"\",\n" +
-                    "    \"client_secret\": \""+xrayClientSecret+"\"\n" +
-                    "}")
+        try {
+            val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    "{\n" +
+                            "    \"client_id\": \"" + xrayClientID + "\",\n" +
+                            "    \"client_secret\": \"" + xrayClientSecret + "\"\n" +
+                            "}"
+                )
+            }
+            importerViewModel.loginResponseCode = response.status.value
+            importerViewModel.loginResponseMessage = response.status.description
+            importerViewModel.loginToken = response.body()
+            // Remove double quotes from token
+            importerViewModel.loginToken = importerViewModel.loginToken.replace("\"", "")
+            client.close()
+        }catch(e: UnresolvedAddressException) {
+            return Result.Error(NetworkError.NO_INTERNET)
+        } catch(e: SerializationException) {
+            return Result.Error(NetworkError.SERIALIZATION)
         }
-        importerViewModel.loginResponseCode = response.status.value
-        importerViewModel.loginResponseMessage = response.status.description
-        importerViewModel.loginToken = response.body()
-        // Remove double quotes from token
-        importerViewModel.loginToken = importerViewModel.loginToken.replace("\"", "")
-        client.close()
-        return response.status
+        return when (importerViewModel.loginResponseCode){
+            in 200..299 -> {
+                Result.Success(LoginResponse(importerViewModel.loginToken))
+            }
+            401 -> Result.Error(NetworkError.UNAUTHORIZED)
+            404 -> Result.Error(NetworkError.NOT_FOUND)
+            409 -> Result.Error(NetworkError.CONFLICT)
+            408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
+            413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+            in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
+            else -> Result.Error(NetworkError.UNKNOWN)
+        }
     }
 
     // Import Feature File To XRay
