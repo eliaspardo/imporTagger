@@ -30,6 +30,7 @@ class XRayRESTClient: IXRayRESTClient{
                             "}"
                 )
             }
+            // TODO Review this, probably shouldn't go here. Not needed?
             importerViewModel.loginResponseCode = response.status.value
             importerViewModel.loginResponseMessage = response.status.description
             importerViewModel.loginToken = response.body()
@@ -80,6 +81,7 @@ class XRayRESTClient: IXRayRESTClient{
                     logger.debug("Sent $bytesSentTotal bytes from $contentLength")
                 }
             }
+            // TODO Review this, probably shouldn't go here. Not needed?
             importerViewModel.importResponseCode = response.status.value
             importerViewModel.importResponseMessage = response.status.description
             importerViewModel.importResponseBody = response.body()
