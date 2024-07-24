@@ -5,6 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import networking.IXRayRESTClient
+import util.KeyValueStorage
 import util.onError
 import util.onSuccess
 
@@ -30,7 +31,6 @@ class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
 
     var loginResponseCode by mutableStateOf(404)
     var loginResponseMessage by mutableStateOf("")
-    var loginToken by mutableStateOf("")
 
     var importResponseCode by mutableStateOf(404)
     var importResponseMessage by mutableStateOf("")
@@ -159,6 +159,7 @@ class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
     // https://github.com/eliaspardo/xray-importer/issues/15
     fun logOut() = GlobalScope.launch {
         launch {
+            KeyValueStorage.getInstance().cleanStorage()
             delay(1000L)
             isLoggingIn=false
             appState = AppState.DEFAULT

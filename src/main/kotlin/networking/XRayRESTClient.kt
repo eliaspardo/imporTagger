@@ -1,5 +1,3 @@
-import util.NetworkError
-import util.Result
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -12,7 +10,7 @@ import kotlinx.serialization.SerializationException
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import networking.createKtorHTTPClient
-import util.XRayError
+import util.*
 import java.io.File
 
 class XRayRESTClient: IXRayRESTClient{
@@ -33,33 +31,36 @@ class XRayRESTClient: IXRayRESTClient{
             // TODO Review this, probably shouldn't go here. Not needed?
             importerViewModel.loginResponseCode = response.status.value
             importerViewModel.loginResponseMessage = response.status.description
-            importerViewModel.loginToken = response.body()
-            // Remove double quotes from token
-            importerViewModel.loginToken = importerViewModel.loginToken.replace("\"", "")
+
             client.close()
+            return when (response.status.value){
+                in 200..299 -> {
+                    // Remove double quotes from token. Save in storage
+                    KeyValueStorage.getInstance().token = response.bodyAsText().replace("\"", "")
+                    Result.Success(LoginResponse(response.bodyAsText()))
+                }
+                401 -> Result.Error(NetworkError.UNAUTHORIZED)
+                404 -> Result.Error(NetworkError.NOT_FOUND)
+                409 -> Result.Error(NetworkError.CONFLICT)
+                408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
+                413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+                in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
+                else -> Result.Error(NetworkError.UNKNOWN)
+            }
         }catch(e: UnresolvedAddressException) {
             return Result.Error(NetworkError.NO_INTERNET)
         } catch(e: SerializationException) {
             return Result.Error(NetworkError.SERIALIZATION)
         }
-        return when (importerViewModel.loginResponseCode){
-            in 200..299 -> {
-                Result.Success(LoginResponse(importerViewModel.loginToken))
-            }
-            401 -> Result.Error(NetworkError.UNAUTHORIZED)
-            404 -> Result.Error(NetworkError.NOT_FOUND)
-            409 -> Result.Error(NetworkError.CONFLICT)
-            408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
-            413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
-            in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
-            else -> Result.Error(NetworkError.UNKNOWN)
-        }
+        return Result.Error(NetworkError.UNKNOWN)
     }
 
     // Import Feature File To XRay
     override suspend fun importFileToXray(featureFilePath: String, importerViewModel: ImporterViewModel): Result<ImportResponse, NetworkError> {
         logger.info("Importing file to XRay")
-        val client = createKtorHTTPClient(importerViewModel.loginToken);
+        //val client = createKtorHTTPClient(importerViewModel.loginToken);
+        val client = KeyValueStorage.getInstance().token?.let { createKtorHTTPClient(it)
+        }?: run {return Result.Error(NetworkError.NO_INTERNET)}
         try{
             val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
                 setBody(
@@ -117,7 +118,10 @@ class XRayRESTClient: IXRayRESTClient{
 
     override suspend fun downloadCucumberTestsFromXRay(testID: String, importerViewModel: ImporterViewModel): File {
         logger.info("Downloading Cucumber Test from Xray "+testID);
-        val client = createKtorHTTPClient(importerViewModel.loginToken);
+        //val client = createKtorHTTPClient(importerViewModel.loginToken);
+        // TODO Fix this
+        val client = KeyValueStorage.getInstance().token?.let { createKtorHTTPClient(it)
+        }?: run {return File.createTempFile("xrayImporter", ".zip")}
         val file = File.createTempFile("xrayImporter", ".zip")
         runBlocking {
             val httpResponse: HttpResponse = client.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys="+testID) {

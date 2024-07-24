@@ -19,6 +19,8 @@ repositories {
 
 val ktor_version: String by project
 val jvm_version: String by project
+// Version 1.0.0 complains about the Kotlin version
+val multiplatformSettings = "0.7.7"
 
 dependencies {
     testImplementation(kotlin("test"))
@@ -36,6 +38,8 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.5.3")
+    implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
+
 }
 
 tasks.test {
