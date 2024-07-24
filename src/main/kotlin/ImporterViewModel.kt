@@ -1,15 +1,14 @@
 import androidx.compose.runtime.*
-import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import networking.IXRayRESTClient
-import util.KeyValueStorage
+import util.IKeyValueStorage
 import util.onError
 import util.onSuccess
 
-class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
+class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private var iKeyValueStorage: IKeyValueStorage) {
 
     private val logger = KotlinLogging.logger {}
     var featureFiles = mutableStateListOf<FeatureFile>()
@@ -139,7 +138,7 @@ class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
     fun logIn() = GlobalScope.launch {
         launch {
             delay(1000L)
-            ixRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
+            iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 loginState = LoginState.LOGGED_IN
@@ -159,7 +158,7 @@ class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
     // https://github.com/eliaspardo/xray-importer/issues/15
     fun logOut() = GlobalScope.launch {
         launch {
-            KeyValueStorage.getInstance().cleanStorage()
+            iKeyValueStorage.cleanStorage()
             delay(1000L)
             isLoggingIn=false
             appState = AppState.DEFAULT
@@ -174,13 +173,13 @@ class ImporterViewModel(private var ixRayRESTClient: IXRayRESTClient) {
 
                 logger.info("Importing file: "+file.path);
 
-                ixRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
+                iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
                     logger.info("Import and tagging OK. Starting Tagging.");
 
                     // On Success start tagging tests and preconditions
                     val fileManager = FileManager()
                     val xRayTagger = XRayTagger()
-                    if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, ixRayRESTClient, this@ImporterViewModel)
+                    if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
                     if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
 
                     file.isImported = true

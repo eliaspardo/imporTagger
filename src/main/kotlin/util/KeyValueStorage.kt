@@ -5,16 +5,6 @@ import com.russhwolf.settings.get
 import com.russhwolf.settings.set
 
 class KeyValueStorage: IKeyValueStorage {
-    companion object {
-        @Volatile
-        private var instance: KeyValueStorage? = null
-
-        fun getInstance() =
-            instance ?: synchronized(this) {
-                instance ?: KeyValueStorage().also { instance = it }
-            }
-
-    }
 
     private val settings: Settings by lazy { Settings() }
 

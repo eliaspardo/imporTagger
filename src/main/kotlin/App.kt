@@ -8,12 +8,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import util.KeyValueStorage
 
 
 fun main() = application {
     val icon = painterResource("icon.png")
-    val xRayRESTClient = XRayRESTClient()
-    val importerViewModel = ImporterViewModel(xRayRESTClient)
+    val keyValueStorage = KeyValueStorage()
+    val xRayRESTClient = XRayRESTClient(keyValueStorage)
+    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorage)
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
         Column(Modifier.fillMaxWidth(), Arrangement.Center) {
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {

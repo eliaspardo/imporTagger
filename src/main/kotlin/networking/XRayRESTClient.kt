@@ -13,7 +13,7 @@ import networking.createKtorHTTPClient
 import util.*
 import java.io.File
 
-class XRayRESTClient: IXRayRESTClient{
+class XRayRESTClient(private var iKeyValueStorage: IKeyValueStorage): IXRayRESTClient{
     private val logger = KotlinLogging.logger {}
     override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String, importerViewModel: ImporterViewModel): Result<LoginResponse, NetworkError> {
         logger.info("Logging into XRay")
@@ -36,7 +36,7 @@ class XRayRESTClient: IXRayRESTClient{
             return when (response.status.value){
                 in 200..299 -> {
                     // Remove double quotes from token. Save in storage
-                    KeyValueStorage.getInstance().token = response.bodyAsText().replace("\"", "")
+                    iKeyValueStorage.token = response.bodyAsText().replace("\"", "")
                     Result.Success(LoginResponse(response.bodyAsText()))
                 }
                 401 -> Result.Error(NetworkError.UNAUTHORIZED)
@@ -59,7 +59,7 @@ class XRayRESTClient: IXRayRESTClient{
     override suspend fun importFileToXray(featureFilePath: String, importerViewModel: ImporterViewModel): Result<ImportResponse, NetworkError> {
         logger.info("Importing file to XRay")
         //val client = createKtorHTTPClient(importerViewModel.loginToken);
-        val client = KeyValueStorage.getInstance().token?.let { createKtorHTTPClient(it)
+        val client = iKeyValueStorage.token?.let { createKtorHTTPClient(it)
         }?: run {return Result.Error(NetworkError.NO_INTERNET)}
         try{
             val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
@@ -120,7 +120,7 @@ class XRayRESTClient: IXRayRESTClient{
         logger.info("Downloading Cucumber Test from Xray "+testID);
         //val client = createKtorHTTPClient(importerViewModel.loginToken);
         // TODO Fix this
-        val client = KeyValueStorage.getInstance().token?.let { createKtorHTTPClient(it)
+        val client = iKeyValueStorage.token?.let { createKtorHTTPClient(it)
         }?: run {return File.createTempFile("xrayImporter", ".zip")}
         val file = File.createTempFile("xrayImporter", ".zip")
         runBlocking {
