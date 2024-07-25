@@ -1,5 +1,7 @@
 import mu.KotlinLogging
 import networking.IXRayRESTClient
+import util.onError
+import util.onSuccess
 import java.io.File
 
 class XRayTagger {
@@ -171,18 +173,25 @@ class XRayTagger {
             if(!isFileTagged(featureFileLines,testID)) {
                 logger.info("File is not tagged")
                 // Download zip file to know which scenario needs tagging
-                var zipFile = ixRayRESTClient.downloadCucumberTestsFromXRay(testID,importerViewModel)
-                val unzippedTestFile = fileManager.unzipFile(zipFile)
-                fileManager.deleteFile(zipFile)
+                ixRayRESTClient.downloadCucumberTestsFromXRay(testID,importerViewModel)
+                    .onSuccess {
+                        val zipFile = File.createTempFile("xrayImporter", ".zip")
+                        zipFile.writeBytes(it.exportedTestCase)
+                        val unzippedTestFile = fileManager.unzipFile(zipFile)
+                        fileManager.deleteFile(zipFile)
 
-                // Get Scenario from extracted file
-                val unzippedFileLines = fileManager.readFile(unzippedTestFile)
-                val scenario = getScenario(unzippedFileLines)
-                fileManager.deleteFile(File(unzippedTestFile))
+                        // Get Scenario from extracted file
+                        val unzippedFileLines = fileManager.readFile(unzippedTestFile)
+                        val scenario = getScenario(unzippedFileLines)
+                        fileManager.deleteFile(File(unzippedTestFile))
 
-                // Find Scenario in featureFile and tag it
-                val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
-                fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                        // Find Scenario in featureFile and tag it
+                        val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
+                        fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                    }.onError {
+                        // TODO Return exception
+                        return
+                    }
             }
         }
     }
