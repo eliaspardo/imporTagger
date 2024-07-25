@@ -1,13 +1,12 @@
-import ImporterViewModel.importResponseBody
 import androidx.compose.material.Button
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun ImportButton(onImportClick: () -> () -> Unit) {
-    if(ImporterViewModel.appState!=AppState.IMPORTING) {
-        Button(onClick = onImportClick(), enabled = ImporterViewModel.isImportButtonEnabled()) {
+fun ImportButton(onImportClick: () -> () -> Unit, importerViewModel: ImporterViewModel) {
+    if(importerViewModel.appState!=AppState.IMPORTING) {
+        Button(onClick = onImportClick(), enabled = importerViewModel.isImportButtonEnabled()) {
             Text("Import")
         }
         // TODO Review this
@@ -15,6 +14,6 @@ fun ImportButton(onImportClick: () -> () -> Unit) {
             Text(importResponseBody.errors.toString())
         }*/
     }else {
-        LinearProgressIndicator(progress = ImporterViewModel.percentageProcessed)
+        LinearProgressIndicator(progress = importerViewModel.percentageProcessed)
     }
 }

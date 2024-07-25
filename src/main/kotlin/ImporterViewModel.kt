@@ -1,10 +1,16 @@
 import androidx.compose.runtime.*
-import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
+import networking.IXRayRESTClient
+import util.IKeyValueStorage
+import util.onError
+import util.onSuccess
 
-object ImporterViewModel {
+class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private var iKeyValueStorage: IKeyValueStorage) {
+
+    private val logger = KotlinLogging.logger {}
     var featureFiles = mutableStateListOf<FeatureFile>()
         private set
     var testInfoFile = mutableStateOf<java.io.File?>(null)
@@ -24,7 +30,6 @@ object ImporterViewModel {
 
     var loginResponseCode by mutableStateOf(404)
     var loginResponseMessage by mutableStateOf("")
-    var loginToken by mutableStateOf("")
 
     var importResponseCode by mutableStateOf(404)
     var importResponseMessage by mutableStateOf("")
@@ -133,12 +138,12 @@ object ImporterViewModel {
     fun logIn() = GlobalScope.launch {
         launch {
             delay(1000L)
-            if (logInOnXRay(xrayClientID,xrayClientSecret) == HttpStatusCode(200,"OK")){
+            iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 loginState = LoginState.LOGGED_IN
                 xrayClientSecret=""
-            }else{
+            }.onError {
                 isLoggingIn=false
                 appState = AppState.DEFAULT
                 // TODO This is not working. Works with LoginState.LOGGED_OUT.
@@ -148,8 +153,12 @@ object ImporterViewModel {
         }
     }
 
+    // TODO Is this really needed? Can we logout? Does it revoke the token?
+    // In any case it would be nice to have, if we want to switch users.
+    // https://github.com/eliaspardo/xray-importer/issues/15
     fun logOut() = GlobalScope.launch {
         launch {
+            iKeyValueStorage.cleanStorage()
             delay(1000L)
             isLoggingIn=false
             appState = AppState.DEFAULT
@@ -161,7 +170,23 @@ object ImporterViewModel {
         launch {
             percentageProcessed = 0f
             featureFiles.map{ file-> if(file.isChecked){
-                file.import();
+
+                logger.info("Importing file: "+file.path);
+
+                iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
+                    logger.info("Import and tagging OK. Starting Tagging.");
+
+                    // On Success start tagging tests and preconditions
+                    val fileManager = FileManager()
+                    val xRayTagger = XRayTagger()
+                    if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
+                    if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
+
+                    file.isImported = true
+                }.onError {
+                    logger.info("Error importing file: "+it);
+                    file.isError = true
+                }
                 calculatePercentageProcessed();
                 if(file.isImported){file.isChecked=false}else{
                     file.isError=true

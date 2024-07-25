@@ -1,4 +1,3 @@
-import ImporterViewModel.importResponseBody
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @Composable
-fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit) {
+fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importerViewModel: ImporterViewModel) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
     Scaffold(scaffoldState = scaffoldState){
@@ -29,7 +28,7 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit) {
                 Text("Remove", Modifier.width(60.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary)
             }
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colors.primary).verticalScroll(rememberScrollState())) {
-                ImporterViewModel.featureFiles.forEach { file ->
+                importerViewModel.featureFiles.forEach { file ->
                     Surface(
                         Modifier.fillMaxWidth(),
                         color = if (file.isImported) Color.Green else if (file.isError) MaterialTheme.colors.error else MaterialTheme.colors.background
@@ -45,7 +44,7 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit) {
                                 )
                             }else if(file.isFeatureFile()==false){
                                 Icon(Icons.Default.Close, "Not a feature file!", modifier = Modifier.width(60.dp))
-                            }else if(ImporterViewModel.maxFilesCheckedReached()){
+                            }else if(importerViewModel.maxFilesCheckedReached()){
                                 Checkbox(
                                     checked = false,
                                     onCheckedChange = null,
@@ -69,15 +68,15 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit) {
                 }
             }
         }
-        if(ImporterViewModel.maxFilesCheckedReached()){
+        if(importerViewModel.maxFilesCheckedReached()){
             scope.launch {
                 scaffoldState.snackbarHostState.showSnackbar("Max no. of files to import reached: 10")
             }
         }
         // TODO For some reason this is triggering the notification twice
-        if(!importResponseBody.errors.isEmpty()){
+        if(!importerViewModel.importResponseBody.errors.isEmpty()){
             scope.launch {
-                scaffoldState.snackbarHostState.showSnackbar(importResponseBody.errors.toString())
+                scaffoldState.snackbarHostState.showSnackbar(importerViewModel.importResponseBody.errors.toString())
             }
         }
     }

@@ -29,14 +29,14 @@ fun SingleFileDialog(
 )
 
 @Composable
-fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: File?) -> Unit) {
+fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: File?) -> Unit,importerViewModel: ImporterViewModel) {
     Button(
         onClick = onTestInfoFileChooserClick,
-        enabled = ImporterViewModel.isFileChooserButtonEnabled(),
+        enabled = importerViewModel.isFileChooserButtonEnabled(),
         modifier = Modifier.padding(5.dp)) {
         Text("Select Test Info File")
     }
-    if(ImporterViewModel.appState==AppState.TEST_INFO_FILE_DIALOG_OPEN) {
+    if(importerViewModel.appState==AppState.TEST_INFO_FILE_DIALOG_OPEN) {
         SingleFileDialog(
             onCloseRequest = { file ->
                 onTestInfoFileChooserClose(file)

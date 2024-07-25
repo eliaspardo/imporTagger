@@ -4,12 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.6.10"
-    //kotlin("jvm") version "1.8.10"
-    //kotlin("jvm") version "1.9.10"
-    //id("org.jetbrains.compose") version "1.1.0"
     id("org.jetbrains.compose") version "1.1.1"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.6.0"
-    //id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
 }
 
 group = "me.elias"
@@ -22,6 +18,9 @@ repositories {
 }
 
 val ktor_version: String by project
+val jvm_version: String by project
+// Version 1.0.0 complains about the Kotlin version
+val multiplatformSettings = "0.7.7"
 
 dependencies {
     testImplementation(kotlin("test"))
@@ -37,19 +36,18 @@ dependencies {
     implementation("io.ktor:ktor-client-auth:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.5.3")
+    implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
+
 }
 
 tasks.test {
-    //useTestNG()
     useJUnitPlatform()
 }
 
 tasks.withType<KotlinCompile> {
-    //kotlinOptions.jvmTarget = "11"
-    kotlinOptions.jvmTarget = "16"
+    kotlinOptions.jvmTarget = jvm_version
 }
 
 compose.desktop {
@@ -67,11 +65,9 @@ compose.desktop {
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-    //jvmTarget = "1.8"
-    jvmTarget = "16"
+    jvmTarget = jvm_version
 }
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-    //jvmTarget = "1.8"
-    jvmTarget = "16"
+    jvmTarget = jvm_version
 }

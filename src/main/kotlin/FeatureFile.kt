@@ -18,29 +18,17 @@ data class FeatureFile(val name: String, val path: String) {
         if (!isFeatureFile()) {
             return false
         }
-        if(ImporterViewModel.maxFilesCheckedReached()&&!isChecked){
+        // TODO Fix this to check for max files, probably shouldnt be done here
+        //if(importerViewModel.maxFilesCheckedReached()&&!isChecked){
             // TODO Show dialog
 
-            return false
-        }
+        //    return false
+        //}
         return true
     }
 
     fun isFeatureFile(): Boolean {
         return name.substringAfterLast('.', "").equals("feature")
-    }
-
-    // TODO Review. We probably want this method to be renamed and separating the import and tagging of files
-    suspend fun import() {
-        logger.info("Importing file: "+path);
-        val response = importFileToXray(path)
-        if(response!= HttpStatusCode.OK){
-            logger.info("Error importing file: "+response);
-            isError = true
-        }else{
-            logger.info("Import and tagging OK");
-            isImported = true
-        }
     }
 
     val onCheckedChange: (checked: Boolean) -> Unit = { checked ->
