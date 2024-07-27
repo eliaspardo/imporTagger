@@ -34,7 +34,7 @@ fun main() = application {
                 Text(text = "TestInfo.json: "+importerViewModel.testInfoFile.value)
             }
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-                ImportButton ({ importerViewModel.onImportClick },importerViewModel)
+                ImportButton (importerViewModel.onImportClick,importerViewModel)
             }
             FeatureFileListUI(importerViewModel.onRemoveFile,importerViewModel)
         }

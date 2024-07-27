@@ -3,11 +3,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -18,15 +15,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginBox(
     onLoginChanged: (username: String, password:String) -> Unit,
-    onLoginClick: () -> Unit,
+    onLoginClick: (coroutineScope: CoroutineScope) -> Unit,
     importerViewModel: ImporterViewModel
 ) {
     var isClientSecretVisible by rememberSaveable { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -96,11 +95,19 @@ fun LoginBox(
                     modifier = Modifier.padding(start = 16.dp, top = 0.dp)
                 )
             }
-            Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
+            /*Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
+                Text("Log In")
+            }*/
+
+            Button(onClick = { onLoginClick(coroutineScope) }, enabled = importerViewModel.isLoginButtonEnabled()) {
                 Text("Log In")
             }
         } else {
             CircularProgressIndicator()
+            // TODO Cancel coroutines
+            Button(onClick = {importerViewModel.onLoginCancelClick}, enabled = true){
+                Text("Cancel")
+            }
         }
     }
 }
@@ -125,11 +132,11 @@ fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
 @Composable
 fun XRayLoginBox(
     onLoginChanged: (username: String, password: String) -> Unit,
-    onLoginClick: () -> Unit,
+    onLoginClick: (coroutineScope: CoroutineScope) -> Unit,
     onLogoutClick: () -> Unit,
     importerViewModel: ImporterViewModel
 ) {
-    if(importerViewModel.loginState==LoginState.LOGGED_OUT||importerViewModel.loginState==LoginState.ERROR){
+    if(importerViewModel.loginState==LoginState.DEFAULT||importerViewModel.loginState==LoginState.ERROR){
         LoginBox(onLoginChanged, onLoginClick,importerViewModel)
     }else{
         LogoutBox(onLogoutClick,importerViewModel)

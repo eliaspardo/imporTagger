@@ -1,4 +1,5 @@
 import androidx.compose.runtime.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -7,6 +8,7 @@ import networking.IXRayRESTClient
 import util.IKeyValueStorage
 import util.onError
 import util.onSuccess
+import java.io.File
 
 class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private var iKeyValueStorage: IKeyValueStorage) {
 
@@ -25,7 +27,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         private set
     var appState by mutableStateOf(AppState.DEFAULT)
         private set
-    var loginState by mutableStateOf(LoginState.LOGGED_OUT)
+    var loginState by mutableStateOf(LoginState.DEFAULT)
         private set
 
     var loginResponseCode by mutableStateOf(404)
@@ -37,9 +39,10 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
 
     // Lambda callback functions for the UI
-    val onImportClick: () -> Unit = {
-        appState=AppState.IMPORTING
-        importXRayTests()
+    val onImportClick: (coroutineScope:CoroutineScope) -> Unit = {
+        it.launch {
+            importXRayTests()
+        }
     }
 
     var onLoginChanged: (username: String, password: String)-> Unit = { username, password ->
@@ -47,16 +50,18 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         this.xrayClientSecret = password
     }
 
-    val onLoginClick: () -> Unit = {
-        appState=AppState.LOGGING_IN
-        isLoggingIn=true
-        logIn()
+    val onLoginClick: (coroutineScope:CoroutineScope) -> Unit = {
+        it.launch {
+            logIn()
+        }
     }
 
     val onLogoutClick: () -> Unit = {
-        appState=AppState.LOGGING_OUT
-        isLoggingIn=true
         logOut()
+    }
+
+    val onLoginCancelClick: () -> Unit = {
+        // TODO https://github.com/eliaspardo/xray-importer/issues/17
     }
 
     val onFeatureFileChooserClick: () -> Unit = {
@@ -135,65 +140,65 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         }
     }
 
-    fun logIn() = GlobalScope.launch {
-        launch {
-            delay(1000L)
-            iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
-                isLoggingIn=false
-                appState = AppState.DEFAULT
-                loginState = LoginState.LOGGED_IN
-                xrayClientSecret=""
-            }.onError {
-                isLoggingIn=false
-                appState = AppState.DEFAULT
-                // TODO This is not working. Works with LoginState.LOGGED_OUT.
-                loginState = LoginState.ERROR
-                xrayClientSecret=""
-            }
-        }
-    }
-
-    // TODO Is this really needed? Can we logout? Does it revoke the token?
-    // In any case it would be nice to have, if we want to switch users.
-    // https://github.com/eliaspardo/xray-importer/issues/15
-    fun logOut() = GlobalScope.launch {
-        launch {
-            iKeyValueStorage.cleanStorage()
-            delay(1000L)
+    suspend fun logIn() {
+        appState=AppState.LOGGING_IN
+        isLoggingIn=true
+        delay(1000L)
+        iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
             isLoggingIn=false
             appState = AppState.DEFAULT
-            loginState = LoginState.LOGGED_OUT
+            loginState = LoginState.LOGGED_IN
+            xrayClientSecret=""
+        }.onError {
+            isLoggingIn=false
+            appState = AppState.DEFAULT
+            // TODO This is not working. Works with LoginState.LOGGED_OUT.
+            loginState = LoginState.ERROR
+            xrayClientSecret=""
         }
     }
 
-    fun importXRayTests() = GlobalScope.launch {
-        launch {
-            percentageProcessed = 0f
-            featureFiles.map{ file-> if(file.isChecked){
+    /*
+     * Logout cleans the storage (token) and clears feature and test info files
+     */
+    fun logOut() {
+        appState=AppState.LOGGING_OUT
+        isLoggingIn=true
+        iKeyValueStorage.cleanStorage()
+        isLoggingIn=false
+        featureFiles.clear()
+        testInfoFile.value= null
+        appState = AppState.DEFAULT
+        loginState = LoginState.LOGGED_OUT
+    }
 
-                logger.info("Importing file: "+file.path);
+    suspend fun importXRayTests(){
+        appState=AppState.IMPORTING
+        percentageProcessed = 0f
+        featureFiles.map{ file-> if(file.isChecked){
 
-                iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
-                    logger.info("Import and tagging OK. Starting Tagging.");
+            logger.info("Importing file: "+file.path);
 
-                    // On Success start tagging tests and preconditions
-                    val fileManager = FileManager()
-                    val xRayTagger = XRayTagger()
-                    if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
-                    if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
+            iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
+                logger.info("Import and tagging OK. Starting Tagging.");
 
-                    file.isImported = true
-                }.onError {
-                    logger.info("Error importing file: "+it);
-                    file.isError = true
-                }
-                calculatePercentageProcessed();
-                if(file.isImported){file.isChecked=false}else{
-                    file.isError=true
-                }
-            }}
-            appState = AppState.DEFAULT
-        }
+                // On Success start tagging tests and preconditions
+                val fileManager = FileManager()
+                val xRayTagger = XRayTagger()
+                if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
+                if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
+
+                file.isImported = true
+            }.onError {
+                logger.info("Error importing file: "+it);
+                file.isError = true
+            }
+            calculatePercentageProcessed();
+            if(file.isImported){file.isChecked=false}else{
+                file.isError=true
+            }
+        }}
+        appState = AppState.DEFAULT
     }
 }
 
@@ -202,5 +207,5 @@ enum class AppState {
 }
 
 enum class LoginState {
-    LOGGED_OUT, LOGGED_IN, ERROR
+    DEFAULT, LOGGED_OUT, LOGGED_IN, ERROR
 }

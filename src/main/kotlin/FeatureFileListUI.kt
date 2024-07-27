@@ -73,6 +73,12 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importer
                 scaffoldState.snackbarHostState.showSnackbar("Max no. of files to import reached: 10")
             }
         }
+        // TODO Review placement. Move all toasts to main screen?
+        if(importerViewModel.loginState==LoginState.LOGGED_OUT){
+            scope.launch {
+                scaffoldState.snackbarHostState.showSnackbar("Successfully logged out")
+            }
+        }
         // TODO For some reason this is triggering the notification twice
         if(!importerViewModel.importResponseBody.errors.isEmpty()){
             scope.launch {
