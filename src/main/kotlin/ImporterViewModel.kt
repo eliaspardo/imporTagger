@@ -145,6 +145,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
 
     fun addFilesToList(files: Array<java.io.File>){
         files.forEach{ file->
+            // TODO This logic could go in another function
             // Only add file if not found in list
             if((this.featureFiles.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size)==0){
                 addFileToList(FeatureFile(file.name, file.absolutePath))

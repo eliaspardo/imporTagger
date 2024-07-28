@@ -39,6 +39,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.5.3")
     implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
+    implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.1.1")
 
 }
 
