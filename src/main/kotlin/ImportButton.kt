@@ -6,10 +6,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
-fun ImportButton(onImportClick: (coroutineScope: CoroutineScope) -> Unit, importerViewModel: ImporterViewModel) {
-    val coroutineScope = rememberCoroutineScope()
+fun ImportButton(onImportClick: () -> Unit, onImportCancelClick: ()-> Unit, importerViewModel: ImporterViewModel) {
     if(importerViewModel.appState!=AppState.IMPORTING) {
-        Button(onClick = { onImportClick(coroutineScope) }, enabled = importerViewModel.isImportButtonEnabled()) {
+        Button(onClick = onImportClick, enabled = importerViewModel.isImportButtonEnabled()) {
             Text("Import")
         }
         // TODO Review this
@@ -18,5 +17,8 @@ fun ImportButton(onImportClick: (coroutineScope: CoroutineScope) -> Unit, import
         }*/
     }else {
         LinearProgressIndicator(progress = importerViewModel.percentageProcessed)
+        Button(onClick = onImportCancelClick, enabled = true){
+            Text("Cancel")
+        }
     }
 }

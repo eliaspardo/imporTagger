@@ -21,11 +21,11 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun LoginBox(
     onLoginChanged: (username: String, password:String) -> Unit,
-    onLoginClick: (coroutineScope: CoroutineScope) -> Unit,
+    onLoginClick: () -> Unit,
+    onLoginCancelClick: () -> Unit,
     importerViewModel: ImporterViewModel
 ) {
     var isClientSecretVisible by rememberSaveable { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -95,17 +95,12 @@ fun LoginBox(
                     modifier = Modifier.padding(start = 16.dp, top = 0.dp)
                 )
             }
-            /*Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
-                Text("Log In")
-            }*/
-
-            Button(onClick = { onLoginClick(coroutineScope) }, enabled = importerViewModel.isLoginButtonEnabled()) {
+            Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
                 Text("Log In")
             }
         } else {
             CircularProgressIndicator()
-            // TODO Cancel coroutines
-            Button(onClick = {importerViewModel.onLoginCancelClick}, enabled = true){
+            Button(onClick = onLoginCancelClick, enabled = true){
                 Text("Cancel")
             }
         }
@@ -132,12 +127,13 @@ fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
 @Composable
 fun XRayLoginBox(
     onLoginChanged: (username: String, password: String) -> Unit,
-    onLoginClick: (coroutineScope: CoroutineScope) -> Unit,
+    onLoginClick: () -> Unit,
+    onLoginCancelClick: () -> Unit,
     onLogoutClick: () -> Unit,
     importerViewModel: ImporterViewModel
 ) {
-    if(importerViewModel.loginState==LoginState.DEFAULT||importerViewModel.loginState==LoginState.ERROR){
-        LoginBox(onLoginChanged, onLoginClick,importerViewModel)
+    if(importerViewModel.loginState==LoginState.DEFAULT||importerViewModel.loginState==LoginState.ERROR||importerViewModel.loginState==LoginState.LOGGED_OUT){
+        LoginBox(onLoginChanged, onLoginClick, onLoginCancelClick, importerViewModel)
     }else{
         LogoutBox(onLogoutClick,importerViewModel)
     }

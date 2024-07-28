@@ -22,6 +22,7 @@ fun main() = application {
                 XRayLoginBox(
                     importerViewModel.onLoginChanged,
                     importerViewModel.onLoginClick,
+                    importerViewModel.onLoginCancelClick,
                     importerViewModel.onLogoutClick,
                     importerViewModel
                 )
@@ -34,7 +35,7 @@ fun main() = application {
                 Text(text = "TestInfo.json: "+importerViewModel.testInfoFile.value)
             }
             Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-                ImportButton (importerViewModel.onImportClick,importerViewModel)
+                ImportButton (importerViewModel.onImportClick, importerViewModel.onImportCancelClick, importerViewModel)
             }
             FeatureFileListUI(importerViewModel.onRemoveFile,importerViewModel)
         }

@@ -1,8 +1,5 @@
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import util.IKeyValueStorage
@@ -13,6 +10,9 @@ import java.io.File
 class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private var iKeyValueStorage: IKeyValueStorage) {
 
     private val logger = KotlinLogging.logger {}
+    private var loginCoroutineScope = CoroutineScope(Dispatchers.Default)
+    private var importCoroutineScope = CoroutineScope(Dispatchers.Default)
+
     var featureFiles = mutableStateListOf<FeatureFile>()
         private set
     var testInfoFile = mutableStateOf<java.io.File?>(null)
@@ -35,14 +35,21 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
 
     var importResponseCode by mutableStateOf(404)
     var importResponseMessage by mutableStateOf("")
-    //var initialResponseBody = ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList())
     var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
 
     // Lambda callback functions for the UI
-    val onImportClick: (coroutineScope:CoroutineScope) -> Unit = {
-        it.launch {
+    val onImportClick: () -> Unit = {
+        importCoroutineScope.launch {
             importXRayTests()
         }
+    }
+
+    val onImportCancelClick: ()-> Unit={
+        // TODO https://github.com/eliaspardo/xray-importer/issues/17
+        logger.debug("Clicked Import Cancel button")
+        importCoroutineScope.cancel()
+        importCoroutineScope = CoroutineScope(Dispatchers.Default)
+        appState = AppState.DEFAULT
     }
 
     var onLoginChanged: (username: String, password: String)-> Unit = { username, password ->
@@ -50,8 +57,8 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         this.xrayClientSecret = password
     }
 
-    val onLoginClick: (coroutineScope:CoroutineScope) -> Unit = {
-        it.launch {
+    val onLoginClick: () -> Unit = {
+        loginCoroutineScope.launch {
             logIn()
         }
     }
@@ -62,6 +69,11 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
 
     val onLoginCancelClick: () -> Unit = {
         // TODO https://github.com/eliaspardo/xray-importer/issues/17
+        logger.debug("Clicked Login Cancel button")
+        loginCoroutineScope.cancel()
+        loginCoroutineScope = CoroutineScope(Dispatchers.Default)
+        // Login state remains untouched
+        appState = AppState.DEFAULT
     }
 
     val onFeatureFileChooserClick: () -> Unit = {
