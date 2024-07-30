@@ -1,17 +1,26 @@
-import androidx.compose.runtime.*
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarResult
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
+import snackbar.SnackbarController
 import util.IKeyValueStorage
 import util.onError
 import util.onSuccess
-import java.io.File
 
 class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private var iKeyValueStorage: IKeyValueStorage) {
 
     private val logger = KotlinLogging.logger {}
     private var loginCoroutineScope = CoroutineScope(Dispatchers.Default)
     private var importCoroutineScope = CoroutineScope(Dispatchers.Default)
+    private lateinit var snackbarController: SnackbarController
+    fun setSnackbarController(snackbarController: SnackbarController){
+        this.snackbarController = snackbarController
+    }
 
     var featureFiles = mutableStateListOf<FeatureFile>()
         private set
@@ -45,7 +54,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     }
 
     val onImportCancelClick: ()-> Unit={
-        // TODO https://github.com/eliaspardo/xray-importer/issues/17
         logger.debug("Clicked Import Cancel button")
         importCoroutineScope.cancel()
         importCoroutineScope = CoroutineScope(Dispatchers.Default)
@@ -68,7 +76,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     }
 
     val onLoginCancelClick: () -> Unit = {
-        // TODO https://github.com/eliaspardo/xray-importer/issues/17
         logger.debug("Clicked Login Cancel button")
         loginCoroutineScope.cancel()
         loginCoroutineScope = CoroutineScope(Dispatchers.Default)
@@ -212,6 +219,23 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
             }
         }}
         appState = AppState.DEFAULT
+    }
+
+    fun onTestClickFromViewModel(){
+        snackbarController.showMessage(
+            message = "Test from viewmodel from snackbarController",
+            actionLabel = "Action Label Message",
+            withDismissAction = true,
+            duration = SnackbarDuration.Short,
+            onSnackbarResult = ::handleSnackbarResult
+        )
+    }
+
+    private fun handleSnackbarResult(snackbarResult: SnackbarResult) {
+         when (snackbarResult) {
+             SnackbarResult.Dismissed -> snackbarController.showMessage("Dismissed")
+             SnackbarResult.ActionPerformed -> snackbarController.showMessage("Action Performed")
+         }
     }
 }
 
