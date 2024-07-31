@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import snackbar.LocalSnackbarController
 import snackbar.ProvideSnackbarController
 import snackbar.SnackbarController
+import snackbar.SnackbarMessageHandler
 import util.KeyValueStorage
 
 
@@ -32,6 +33,9 @@ fun main() = application {
             snackbarHostState = snackbarHostState,
             coroutineScope = coroutineScope
         ){
+            val snackbarController: SnackbarController = LocalSnackbarController.current
+            SnackbarMessageHandler.setSnackbarController()
+            //importerViewModel.setSnackbarController(snackbarController)
             Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
             ) {
                 Column(Modifier.fillMaxWidth(), Arrangement.Center) {
@@ -43,8 +47,6 @@ fun main() = application {
                             importerViewModel.onLogoutClick,
                             importerViewModel
                         )
-                        val snackbarController: SnackbarController = LocalSnackbarController.current
-                        importerViewModel.setSnackbarController(snackbarController)
                         Button(onClick = { snackbarController.showMessage("test") }) {
                             Text(text = "Click here to test Snackbar from UI")
                         }
