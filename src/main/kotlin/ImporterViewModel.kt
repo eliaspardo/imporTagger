@@ -220,23 +220,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         }}
         appState = AppState.DEFAULT
     }
-
-    fun onTestClickFromViewModel(){
-        snackbarController.showMessage(
-            message = "Test from viewmodel from snackbarController",
-            actionLabel = "Action Label Message",
-            withDismissAction = true,
-            duration = SnackbarDuration.Short,
-            onSnackbarResult = ::handleSnackbarResult
-        )
-    }
-
-    private fun handleSnackbarResult(snackbarResult: SnackbarResult) {
-         when (snackbarResult) {
-             SnackbarResult.Dismissed -> snackbarController.showMessage("Dismissed")
-             SnackbarResult.ActionPerformed -> snackbarController.showMessage("Action Performed")
-         }
-    }
 }
 
 enum class AppState {

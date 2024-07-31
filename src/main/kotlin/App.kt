@@ -47,12 +47,12 @@ fun main() = application {
                             importerViewModel.onLogoutClick,
                             importerViewModel
                         )
-                        Button(onClick = { snackbarController.showMessage("test") }) {
+                        /*Button(onClick = { snackbarController.showMessage("test") }) {
                             Text(text = "Click here to test Snackbar from UI")
                         }
                         Button(onClick = { importerViewModel.onTestClickFromViewModel()}) {
                             Text(text = "Click here to test Snackbar from ViewModel")
-                        }
+                        }*/
                     }
                     Row(Modifier.fillMaxWidth(), Arrangement.Center) {
                         FeatureFileChooserUI(
@@ -80,18 +80,13 @@ fun main() = application {
                     }
                     FeatureFileListUI(importerViewModel.onRemoveFile, importerViewModel)
                 }
-                // TODO Reinstate this in a proper way
-                /*
-                if(importerViewModel.maxFilesCheckedReached()){
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar("Max no. of files to import reached: 10")
-                    }
-                }
+                /*if(importerViewModel.maxFilesCheckedReached()){
+                    snackbarController.showMessage("Max. number of feature files to import reached")
+                }*/
                 if(importerViewModel.loginState==LoginState.LOGGED_OUT){
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar("Successfully logged out")
-                    }
+                    snackbarController.showMessage("Successfully logged out")
                 }
+                /*
                 // TODO For some reason this is triggering the notification twice
                 if(!importerViewModel.importResponseBody.errors.isEmpty()){
                     scope.launch {
