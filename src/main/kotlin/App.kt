@@ -80,9 +80,6 @@ fun main() = application {
                     }
                     FeatureFileListUI(importerViewModel.onRemoveFile, importerViewModel)
                 }
-                /*if(importerViewModel.maxFilesCheckedReached()){
-                    snackbarController.showMessage("Max. number of feature files to import reached")
-                }*/
                 if(importerViewModel.loginState==LoginState.LOGGED_OUT){
                     snackbarController.showMessage("Successfully logged out")
                 }

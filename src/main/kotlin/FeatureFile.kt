@@ -30,9 +30,4 @@ data class FeatureFile(val name: String, val path: String) {
     fun isFeatureFile(): Boolean {
         return name.substringAfterLast('.', "").equals("feature")
     }
-
-    val onCheckedChange: (checked: Boolean) -> Unit = { checked ->
-        isChecked = checked
-    }
-
 }

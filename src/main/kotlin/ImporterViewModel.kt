@@ -8,6 +8,7 @@ import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.SnackbarController
+import snackbar.SnackbarMessageHandler
 import util.IKeyValueStorage
 import util.onError
 import util.onSuccess
@@ -139,6 +140,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
 
 
     fun maxFilesCheckedReached(): Boolean{
+        println("max files checked reached "+featureFiles.filter{ file->file.isChecked==true}.size)
         return featureFiles.filter{ file->file.isChecked==true}.size>=10
     }
 
@@ -219,6 +221,14 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
             }
         }}
         appState = AppState.DEFAULT
+    }
+
+    val onCheckedChange: (featureFile: FeatureFile, checked: Boolean) -> Unit = { featureFile, checked ->
+        if (maxFilesCheckedReached()){
+            SnackbarMessageHandler.showMessage("Max. no. of feature files reached!")
+            featureFile.isChecked = false
+        }
+        else featureFile.isChecked = checked
     }
 }
 

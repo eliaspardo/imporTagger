@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 
 @Composable
 fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importerViewModel: ImporterViewModel) {
@@ -33,21 +32,15 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importer
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 
                         if(file.isEnabled()){
+                            println("file enabled")
                             Checkbox(
                                 checked = file.isChecked,
-                                onCheckedChange = file.onCheckedChange,
+                                onCheckedChange = {importerViewModel.onCheckedChange(file,it)},
                                 Modifier.width(60.dp),
                                 enabled = file.isEnabled()
                             )
                         }else if(file.isFeatureFile()==false){
                             Icon(Icons.Default.Close, "Not a feature file!", modifier = Modifier.width(60.dp))
-                        }else if(importerViewModel.maxFilesCheckedReached()){
-                            Checkbox(
-                                checked = false,
-                                onCheckedChange = null,
-                                Modifier.width(60.dp),
-                                enabled = false
-                            )
                         }else{
                             Icon(Icons.Default.Check, "File imported successfully!", modifier = Modifier.width(60.dp))
                         }
