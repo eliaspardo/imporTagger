@@ -223,7 +223,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         appState = AppState.DEFAULT
     }
 
-    val onCheckedChange: (featureFile: FeatureFile, checked: Boolean) -> Unit = { featureFile, checked ->
+    val onFeatureFileCheckedChange: (featureFile: FeatureFile, checked: Boolean) -> Unit = { featureFile, checked ->
         if (maxFilesCheckedReached()){
             SnackbarMessageHandler.showMessage("Max. no. of feature files reached!")
             featureFile.isChecked = false
