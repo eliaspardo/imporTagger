@@ -18,12 +18,6 @@ data class FeatureFile(val name: String, val path: String) {
         if (!isFeatureFile()) {
             return false
         }
-        // TODO Fix this to check for max files, probably shouldnt be done here
-        //if(importerViewModel.maxFilesCheckedReached()&&!isChecked){
-            // TODO Show dialog
-
-        //    return false
-        //}
         return true
     }
 
