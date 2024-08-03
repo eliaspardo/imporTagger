@@ -24,8 +24,12 @@ val multiplatformSettings = "0.7.7"
 
 dependencies {
     testImplementation(kotlin("test"))
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+    //implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:2.0.0")
+    //@OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+    //testImplementation(compose.uiTest)
+    testImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.2.1")
+
 
     implementation(compose.desktop.currentOs)
     implementation(compose.materialIconsExtended)
@@ -40,7 +44,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.3")
     implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
     implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.1.1")
-
 }
 
 tasks.test {
