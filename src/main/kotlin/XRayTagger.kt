@@ -1,5 +1,6 @@
 import mu.KotlinLogging
 import networking.IXRayRESTClient
+import snackbar.SnackbarMessageHandler
 import util.onError
 import util.onSuccess
 import java.io.File
@@ -190,6 +191,8 @@ class XRayTagger {
                         fileManager.writeFile(featureFilePath, featureFileLinesTagged)
                     }.onError {
                         // TODO Return exception
+                        logger.error("Error tagging tests in "+featureFilePath);
+                        SnackbarMessageHandler.showMessage("Error tagging tests in "+featureFilePath)
                         return
                     }
             }
@@ -211,6 +214,8 @@ class XRayTagger {
                 // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
                 val featureFileLinesTagged = tagPrecondition(preconditionID, featureFileLines)
                 fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+            }else{
+                logger.info("file is tagged")
             }
 
         }

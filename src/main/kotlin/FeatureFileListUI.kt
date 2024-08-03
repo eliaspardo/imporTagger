@@ -24,7 +24,7 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importer
             Text("Remove", Modifier.width(60.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary)
         }
         Column(Modifier.fillMaxWidth().background(MaterialTheme.colors.primary).verticalScroll(rememberScrollState())) {
-            importerViewModel.featureFiles.forEach { file ->
+            importerViewModel.featureFileList.forEach { file ->
                 Surface(
                     Modifier.fillMaxWidth(),
                     color = if (file.isImported) Color.Green else if (file.isError) MaterialTheme.colors.error else MaterialTheme.colors.background
@@ -35,7 +35,7 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importer
                             println("file enabled")
                             Checkbox(
                                 checked = file.isChecked,
-                                onCheckedChange = {importerViewModel.onCheckedChange(file,it)},
+                                onCheckedChange = {importerViewModel.onFeatureFileCheckedChange(file,it)},
                                 Modifier.width(60.dp),
                                 enabled = file.isEnabled()
                             )

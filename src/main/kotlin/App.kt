@@ -33,9 +33,7 @@ fun main() = application {
             snackbarHostState = snackbarHostState,
             coroutineScope = coroutineScope
         ){
-            val snackbarController: SnackbarController = LocalSnackbarController.current
-            SnackbarMessageHandler.setSnackbarController()
-            //importerViewModel.setSnackbarController(snackbarController)
+            SnackbarMessageHandler.setSnackbarController(LocalSnackbarController.current)
             Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
             ) {
                 Column(Modifier.fillMaxWidth(), Arrangement.Center) {
@@ -47,12 +45,6 @@ fun main() = application {
                             importerViewModel.onLogoutClick,
                             importerViewModel
                         )
-                        /*Button(onClick = { snackbarController.showMessage("test") }) {
-                            Text(text = "Click here to test Snackbar from UI")
-                        }
-                        Button(onClick = { importerViewModel.onTestClickFromViewModel()}) {
-                            Text(text = "Click here to test Snackbar from ViewModel")
-                        }*/
                     }
                     Row(Modifier.fillMaxWidth(), Arrangement.Center) {
                         FeatureFileChooserUI(
@@ -79,9 +71,6 @@ fun main() = application {
                         )
                     }
                     FeatureFileListUI(importerViewModel.onRemoveFile, importerViewModel)
-                }
-                if(importerViewModel.loginState==LoginState.LOGGED_OUT){
-                    snackbarController.showMessage("Successfully logged out")
                 }
                 /*
                 // TODO For some reason this is triggering the notification twice

@@ -33,7 +33,6 @@ fun LoginBox(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            //Text(text = "XRay Login", fontSize = 25.sp)
             val focusManager = LocalFocusManager.current
             OutlinedTextField(
                 value = importerViewModel.xrayClientID,
@@ -83,18 +82,10 @@ fun LoginBox(
                         )
                     }
                 },
-                isError = importerViewModel.isLoginError()
+                isError = importerViewModel.loginState==LoginState.ERROR
             )
         }
         if (importerViewModel.appState != AppState.LOGGING_IN) {
-            if (importerViewModel.isLoginError()) {
-                Text(
-                    text = "Login Error. Error Code: "+importerViewModel.loginResponseCode+" "+importerViewModel.loginResponseMessage,
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier.padding(start = 16.dp, top = 0.dp)
-                )
-            }
             Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
                 Text("Log In")
             }

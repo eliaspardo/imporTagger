@@ -1,5 +1,3 @@
-import androidx.compose.material.SnackbarDuration
-import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +21,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         this.snackbarController = snackbarController
     }
 
-    var featureFiles = mutableStateListOf<FeatureFile>()
+    var featureFileList = mutableStateListOf<FeatureFile>()
         private set
     var testInfoFile = mutableStateOf<java.io.File?>(null)
         private set
@@ -82,6 +80,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         loginCoroutineScope = CoroutineScope(Dispatchers.Default)
         // Login state remains untouched
         appState = AppState.DEFAULT
+        SnackbarMessageHandler.showMessage("Cancelled login")
     }
 
     val onFeatureFileChooserClick: () -> Unit = {
@@ -94,7 +93,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
 
     val onFeatureFileChooserClose: (result: Array<java.io.File>?) -> Unit ={ files->
         if(files!=null){
-            addFilesToList(files)
+            addFeatureFilesToFeatureFileList(files)
         }
         appState = AppState.DEFAULT
     }
@@ -107,15 +106,11 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     }
 
     val onRemoveFile: (featureFile: FeatureFile) -> Unit = { file ->
-        featureFiles.remove(file)
+        featureFileList.remove(file)
     }
 
     private fun getFilesToImport(): Int{
-        return featureFiles.filter{ file->file.isChecked}.size
-    }
-
-    private fun getFilesImported(): Int{
-        return featureFiles.filter{ testCase->testCase.isImported}.size
+        return featureFileList.filter{ file->file.isChecked}.size
     }
 
     fun isLoginButtonEnabled(): Boolean{
@@ -134,35 +129,28 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0&&testInfoFile!=null)
     }
 
-    fun isLoginError(): Boolean{
-        return (loginState==LoginState.ERROR)
-    }
-
-
     fun maxFilesCheckedReached(): Boolean{
-        println("max files checked reached "+featureFiles.filter{ file->file.isChecked==true}.size)
-        return featureFiles.filter{ file->file.isChecked==true}.size>=10
-    }
-
-    fun addFileToList(featureFile: FeatureFile){
-        featureFiles.add(featureFile)
+        return featureFileList.filter{ file->file.isChecked==true}.size>=10
     }
 
     fun calculatePercentageProcessed(){
         percentageProcessed = percentageProcessed+(1/getFilesToImport().toFloat())
     }
 
-    fun addFilesToList(files: Array<java.io.File>){
+    fun addFeatureFilesToFeatureFileList(files: Array<java.io.File>){
         files.forEach{ file->
-            // TODO This logic could go in another function
-            // Only add file if not found in list
-            if((this.featureFiles.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size)==0){
-                addFileToList(FeatureFile(file.name, file.absolutePath))
+            if(!isFeatureFileAlreadyInFeatureFileList(file)){
+                featureFileList.add(FeatureFile(file.name, file.absolutePath))
             }
         }
     }
 
+    fun isFeatureFileAlreadyInFeatureFileList(file: java.io.File): Boolean{
+        return this.featureFileList.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size!=0
+    }
+
     suspend fun logIn() {
+        logger.debug("Logging in")
         appState=AppState.LOGGING_IN
         isLoggingIn=true
         delay(1000L)
@@ -171,12 +159,16 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
             appState = AppState.DEFAULT
             loginState = LoginState.LOGGED_IN
             xrayClientSecret=""
+            SnackbarMessageHandler.showMessage("Successfully logged in")
+            logger.debug("Successfully logged in")
         }.onError {
             isLoggingIn=false
             appState = AppState.DEFAULT
             // TODO This is not working. Works with LoginState.LOGGED_OUT.
             loginState = LoginState.ERROR
             xrayClientSecret=""
+            SnackbarMessageHandler.showMessage("Error logging in "+it)
+            logger.error("Error logging in "+it)
         }
     }
 
@@ -184,26 +176,29 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
      * Logout cleans the storage (token) and clears feature and test info files
      */
     fun logOut() {
+        logger.debug("Logging out")
         appState=AppState.LOGGING_OUT
         isLoggingIn=true
         iKeyValueStorage.cleanStorage()
         isLoggingIn=false
-        featureFiles.clear()
+        featureFileList.clear()
         testInfoFile.value= null
         appState = AppState.DEFAULT
         loginState = LoginState.LOGGED_OUT
+        SnackbarMessageHandler.showMessage("Successfully logged out")
+        logger.debug("Successfully logged out")
     }
 
     suspend fun importXRayTests(){
+        SnackbarMessageHandler.showMessage("Importing test cases")
+        logger.debug("Importing test cases")
         appState=AppState.IMPORTING
         percentageProcessed = 0f
-        featureFiles.map{ file-> if(file.isChecked){
+        featureFileList.map{ file-> if(file.isChecked){
 
             logger.info("Importing file: "+file.path);
-
             iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
                 logger.info("Import and tagging OK. Starting Tagging.");
-
                 // On Success start tagging tests and preconditions
                 val fileManager = FileManager()
                 val xRayTagger = XRayTagger()
@@ -211,8 +206,10 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
                 if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
 
                 file.isImported = true
+                SnackbarMessageHandler.showMessage("Imported file successfully")
             }.onError {
-                logger.info("Error importing file: "+it);
+                logger.error("Error importing file: "+it);
+                SnackbarMessageHandler.showMessage("Error importing file: "+it)
                 file.isError = true
             }
             calculatePercentageProcessed();
@@ -221,10 +218,13 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
             }
         }}
         appState = AppState.DEFAULT
+        SnackbarMessageHandler.showMessage("Finished importing test cases")
+        logger.debug("Finished importing test cases")
     }
 
     val onFeatureFileCheckedChange: (featureFile: FeatureFile, checked: Boolean) -> Unit = { featureFile, checked ->
         if (maxFilesCheckedReached()){
+            logger.warn("Max. no. of feature files reached!");
             SnackbarMessageHandler.showMessage("Max. no. of feature files reached!")
             featureFile.isChecked = false
         }

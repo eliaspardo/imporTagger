@@ -4,28 +4,37 @@ import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.Composable
 
-class SnackbarMessageHandler(){
+class SnackbarMessageHandler() {
 
-    companion object{
+    companion object {
         lateinit var snackbarController: SnackbarController
 
         @Composable
-        fun setSnackbarController(snackbarController: SnackbarController = LocalSnackbarController.current){
+        fun setSnackbarController(snackbarController: SnackbarController = LocalSnackbarController.current) {
             this.snackbarController = snackbarController
         }
 
-        fun showMessage(message: String){
+        fun showMessage(
+            message: String,
+            actionLabel: String? = null,
+            withDismissAction: Boolean = false,
+            duration: SnackbarDuration = SnackbarDuration.Short,
+            onSnackbarResult: (SnackbarResult) -> Unit = { }
+        ) {
             if (!this::snackbarController.isInitialized) return
             snackbarController.showMessage(
                 message = message,
-                actionLabel = "Action Label Message",
-                withDismissAction = true,
-                duration = SnackbarDuration.Short,
-                onSnackbarResult = ::handleSnackbarResult
+                actionLabel = actionLabel,
+                withDismissAction = withDismissAction,
+                duration = duration,
+                onSnackbarResult = onSnackbarResult
             )
         }
 
-        private fun handleSnackbarResult(snackbarResult: SnackbarResult) {
+        /*
+        * Sample onSnackbarResult callback
+         */
+        fun handleSnackbarResult(snackbarResult: SnackbarResult) {
             when (snackbarResult) {
                 SnackbarResult.Dismissed -> snackbarController.showMessage("Dismissed")
                 SnackbarResult.ActionPerformed -> snackbarController.showMessage("Action Performed")
