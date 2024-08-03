@@ -5,7 +5,6 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
-import snackbar.SnackbarController
 import snackbar.SnackbarMessageHandler
 import util.IKeyValueStorage
 import util.onError
@@ -16,10 +15,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     private val logger = KotlinLogging.logger {}
     private var loginCoroutineScope = CoroutineScope(Dispatchers.Default)
     private var importCoroutineScope = CoroutineScope(Dispatchers.Default)
-    private lateinit var snackbarController: SnackbarController
-    fun setSnackbarController(snackbarController: SnackbarController){
-        this.snackbarController = snackbarController
-    }
 
     var featureFileList = mutableStateListOf<FeatureFile>()
         private set
@@ -45,7 +40,10 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     var importResponseMessage by mutableStateOf("")
     var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
 
-    // Lambda callback functions for the UI
+    /*
+     * Lambda callback functions for the UI
+     */
+
     val onImportClick: () -> Unit = {
         importCoroutineScope.launch {
             importXRayTests()
@@ -70,10 +68,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         }
     }
 
-    val onLogoutClick: () -> Unit = {
-        logOut()
-    }
-
     val onLoginCancelClick: () -> Unit = {
         logger.debug("Clicked Login Cancel button")
         loginCoroutineScope.cancel()
@@ -81,6 +75,10 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         // Login state remains untouched
         appState = AppState.DEFAULT
         SnackbarMessageHandler.showMessage("Cancelled login")
+    }
+
+    val onLogoutClick: () -> Unit = {
+        logOut()
     }
 
     val onFeatureFileChooserClick: () -> Unit = {
@@ -105,12 +103,24 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         appState = AppState.DEFAULT
     }
 
-    val onRemoveFile: (featureFile: FeatureFile) -> Unit = { file ->
+    val onRemoveFeatureFile: (featureFile: FeatureFile) -> Unit = { file ->
         featureFileList.remove(file)
     }
 
+    /*
+    * Checks what to do when clicking on a file, whether it should get selected or not.
+    */
+    val onFeatureFileCheckedChange: (featureFile: FeatureFile, checked: Boolean) -> Unit = { featureFile, checked ->
+        if (maxFilesCheckedReached()){
+            logger.warn("Max. no. of feature files reached!");
+            SnackbarMessageHandler.showMessage("Max. no. of feature files reached!")
+            featureFile.isChecked = false
+        }
+        else featureFile.isChecked = checked
+    }
+
     private fun getFilesToImport(): Int{
-        return featureFileList.filter{ file->file.isChecked}.size
+        return featureFileList.filter{file->file.isChecked}.size
     }
 
     fun isLoginButtonEnabled(): Boolean{
@@ -149,6 +159,9 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         return this.featureFileList.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size!=0
     }
 
+    /*
+    * This function logs in on XRay, sets correct state
+     */
     suspend fun logIn() {
         logger.debug("Logging in")
         appState=AppState.LOGGING_IN
@@ -189,6 +202,9 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         logger.debug("Successfully logged out")
     }
 
+    /*
+    * Iterates through selected Feature Files in list, importing and tagging them. Handles state.
+     */
     suspend fun importXRayTests(){
         SnackbarMessageHandler.showMessage("Importing test cases")
         logger.debug("Importing test cases")
@@ -220,15 +236,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         appState = AppState.DEFAULT
         SnackbarMessageHandler.showMessage("Finished importing test cases")
         logger.debug("Finished importing test cases")
-    }
-
-    val onFeatureFileCheckedChange: (featureFile: FeatureFile, checked: Boolean) -> Unit = { featureFile, checked ->
-        if (maxFilesCheckedReached()){
-            logger.warn("Max. no. of feature files reached!");
-            SnackbarMessageHandler.showMessage("Max. no. of feature files reached!")
-            featureFile.isChecked = false
-        }
-        else featureFile.isChecked = checked
     }
 }
 

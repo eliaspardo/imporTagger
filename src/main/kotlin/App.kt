@@ -12,10 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.launch
 import snackbar.LocalSnackbarController
 import snackbar.ProvideSnackbarController
-import snackbar.SnackbarController
 import snackbar.SnackbarMessageHandler
 import util.KeyValueStorage
 
@@ -70,7 +68,7 @@ fun main() = application {
                             importerViewModel
                         )
                     }
-                    FeatureFileListUI(importerViewModel.onRemoveFile, importerViewModel)
+                    FeatureFileListUI(importerViewModel.onRemoveFeatureFile, importerViewModel)
                 }
                 /*
                 // TODO For some reason this is triggering the notification twice
