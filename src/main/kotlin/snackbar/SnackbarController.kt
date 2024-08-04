@@ -20,7 +20,7 @@ interface SnackbarController {
      * @param duration duration of the Snackbar.
      * @param onSnackbarResult A callback for when the snackbar is dismissed or the action is performed.
      */
-    fun showMessage(
+    fun showUserMessage(
         message: String,
         actionLabel: String? = null,
         withDismissAction: Boolean = false,

@@ -15,14 +15,15 @@ import androidx.compose.ui.window.application
 import snackbar.LocalSnackbarController
 import snackbar.ProvideSnackbarController
 import snackbar.SnackbarMessageHandler
-import util.KeyValueStorage
+import util.KeyValueStorageImpl
 
 
 fun main() = application {
     val icon = painterResource("icon.png")
-    val keyValueStorage = KeyValueStorage()
-    val xRayRESTClient = XRayRESTClient(keyValueStorage)
-    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorage)
+    val keyValueStorageImpl = KeyValueStorageImpl()
+    val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
+    val snackbarMessageHandler = SnackbarMessageHandler()
+    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
 
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -31,7 +32,7 @@ fun main() = application {
             snackbarHostState = snackbarHostState,
             coroutineScope = coroutineScope
         ){
-            SnackbarMessageHandler.setSnackbarController(LocalSnackbarController.current)
+            snackbarMessageHandler.setSnackbarController(LocalSnackbarController.current)
             Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
             ) {
                 Column(Modifier.fillMaxWidth(), Arrangement.Center) {
