@@ -24,7 +24,7 @@ private class SnackbarControllerImpl(
      * Shows a Snackbar message with the given parameters and invokes the [onSnackbarResult] callback
      * on the snackbar result.
      */
-    override fun showMessage(
+    override fun showUserMessage(
         message: String,
         actionLabel: String?,
         withDismissAction: Boolean,
