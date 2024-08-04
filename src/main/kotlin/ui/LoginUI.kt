@@ -1,3 +1,4 @@
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -16,6 +17,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
+import snackbar.SnackbarMessageHandler
+import util.KeyValueStorageImpl
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -130,4 +133,13 @@ fun XRayLoginBox(
     }
 }
 
+@Preview
+@Composable
+fun Test(){
+    val keyValueStorageImpl = KeyValueStorageImpl()
+    val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
+    val snackbarMessageHandler = SnackbarMessageHandler()
+    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+    LogoutBox(onLogoutClick={},importerViewModel)
+}
 

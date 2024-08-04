@@ -82,11 +82,3 @@ fun main() = application {
         }
     }
 }
-
-@Preview
-@Composable
-fun Test(){
-    Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-    Text(text = "TestInfo.json: C:/fasdflkjsdf/fklajsdfsd.json")
-    }
-}
