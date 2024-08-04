@@ -40,6 +40,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     var importResponseMessage by mutableStateOf("")
     var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
 
+
     /*
      * Lambda callback functions for the UI
      */
