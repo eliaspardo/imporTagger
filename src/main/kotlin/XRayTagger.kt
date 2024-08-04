@@ -1,11 +1,12 @@
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.SnackbarMessageHandler
+import snackbar.UserMessageHandler
 import util.onError
 import util.onSuccess
 import java.io.File
 
-class XRayTagger {
+class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     val testTag = "@TEST_"
     val preconditionTag = "# PRECON_"
     val preconditionPrefix = "Background"
@@ -192,7 +193,7 @@ class XRayTagger {
                     }.onError {
                         // TODO Return exception
                         logger.error("Error tagging tests in "+featureFilePath);
-                        SnackbarMessageHandler.showMessage("Error tagging tests in "+featureFilePath)
+                        iUserMessageHandler.showUserMessage("Error tagging tests in "+featureFilePath)
                         return
                     }
             }

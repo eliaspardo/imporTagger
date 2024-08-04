@@ -5,8 +5,6 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.network.*
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerializationException
 import mu.KotlinLogging
 import networking.IXRayRESTClient
@@ -14,7 +12,7 @@ import networking.createKtorHTTPClient
 import util.*
 import java.io.File
 
-class XRayRESTClient(private var iKeyValueStorage: IKeyValueStorage): IXRayRESTClient{
+class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTClient{
     private val logger = KotlinLogging.logger {}
     override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String, importerViewModel: ImporterViewModel): Result<LoginResponse, NetworkError> {
         logger.info("Logging into XRay")
@@ -37,7 +35,7 @@ class XRayRESTClient(private var iKeyValueStorage: IKeyValueStorage): IXRayRESTC
             return when (response.status.value){
                 in 200..299 -> {
                     // Remove double quotes from token. Save in storage
-                    iKeyValueStorage.token = response.bodyAsText().replace("\"", "")
+                    keyValueStorage.token = response.bodyAsText().replace("\"", "")
                     Result.Success(LoginResponse(response.bodyAsText()))
                 }
                 401 -> Result.Error(NetworkError.UNAUTHORIZED)
@@ -61,7 +59,7 @@ class XRayRESTClient(private var iKeyValueStorage: IKeyValueStorage): IXRayRESTC
     // Import Feature File To XRay
     override suspend fun importFileToXray(featureFilePath: String, importerViewModel: ImporterViewModel): Result<ImportResponse, NetworkError> {
         logger.info("Importing file to XRay")
-        val client = iKeyValueStorage.token?.let { createKtorHTTPClient(it)
+        val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
         }?: run {return Result.Error(NetworkError.NO_TOKEN)}
         try{
             val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
@@ -124,7 +122,7 @@ class XRayRESTClient(private var iKeyValueStorage: IKeyValueStorage): IXRayRESTC
     override suspend fun downloadCucumberTestsFromXRay(testID: String, importerViewModel: ImporterViewModel): Result<ExportResponse, NetworkError> {
         logger.info("Downloading Cucumber Test from Xray "+testID);
         // TODO Fix this
-        val client = iKeyValueStorage.token?.let { createKtorHTTPClient(it)
+        val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
         }?: run {return Result.Error(NetworkError.NO_TOKEN)}
         try {
             val httpResponse: HttpResponse =

@@ -4,41 +4,49 @@ import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.Composable
 
-class SnackbarMessageHandler() {
+class SnackbarMessageHandler():UserMessageHandler{
 
-    companion object {
-        lateinit var snackbarController: SnackbarController
+    lateinit var snackbarController: SnackbarController
+    override fun showUserMessage(message: String) {
+        if (!this::snackbarController.isInitialized) return
+        snackbarController.showUserMessage(
+            message = message,
+            actionLabel = null,
+            withDismissAction = false,
+            duration = SnackbarDuration.Short,
+            onSnackbarResult = {}
+        )
+    }
 
-        @Composable
-        fun setSnackbarController(snackbarController: SnackbarController = LocalSnackbarController.current) {
-            this.snackbarController = snackbarController
+    fun showUserMessage(
+        message: String,
+        actionLabel: String? = null,
+        withDismissAction: Boolean = false,
+        duration: SnackbarDuration = SnackbarDuration.Short,
+        onSnackbarResult: (SnackbarResult) -> Unit = { }
+    ) {
+        if (!this::snackbarController.isInitialized) return
+        snackbarController.showUserMessage(
+            message = message,
+            actionLabel = actionLabel,
+            withDismissAction = withDismissAction,
+            duration = duration,
+            onSnackbarResult = onSnackbarResult
+        )
+    }
+
+    /*
+    * Sample onSnackbarResult callback
+    */
+    fun handleSnackbarResult(snackbarResult: SnackbarResult) {
+        when (snackbarResult) {
+            SnackbarResult.Dismissed -> snackbarController.showUserMessage("Dismissed")
+            SnackbarResult.ActionPerformed -> snackbarController.showUserMessage("Action Performed")
         }
+    }
 
-        fun showMessage(
-            message: String,
-            actionLabel: String? = null,
-            withDismissAction: Boolean = false,
-            duration: SnackbarDuration = SnackbarDuration.Short,
-            onSnackbarResult: (SnackbarResult) -> Unit = { }
-        ) {
-            if (!this::snackbarController.isInitialized) return
-            snackbarController.showMessage(
-                message = message,
-                actionLabel = actionLabel,
-                withDismissAction = withDismissAction,
-                duration = duration,
-                onSnackbarResult = onSnackbarResult
-            )
-        }
-
-        /*
-        * Sample onSnackbarResult callback
-         */
-        fun handleSnackbarResult(snackbarResult: SnackbarResult) {
-            when (snackbarResult) {
-                SnackbarResult.Dismissed -> snackbarController.showMessage("Dismissed")
-                SnackbarResult.ActionPerformed -> snackbarController.showMessage("Action Performed")
-            }
-        }
+    @Composable
+    fun setSnackbarController(snackbarController: SnackbarController = LocalSnackbarController.current) {
+        this.snackbarController = snackbarController
     }
 }
