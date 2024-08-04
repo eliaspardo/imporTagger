@@ -12,7 +12,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -28,7 +32,12 @@ internal class LoginUIKtTest {
         val keyValueStorageImpl = KeyValueStorageImpl()
         val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
         val snackbarMessageHandler = SnackbarMessageHandler()
-        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+        //importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)ç
+        importerViewModel = mockk<ImporterViewModel>()
+        every { importerViewModel.loginState} returns LoginState.LOGGED_IN
+        every { importerViewModel.appState} returns AppState.DEFAULT
+        every { importerViewModel.xrayClientID} returns "Test"
+        every { importerViewModel.isLogoutButtonEnabled()} returns true
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -37,7 +46,8 @@ internal class LoginUIKtTest {
 
         setContent {
 
-            //XRayLoginBox(onLoginChanged={ username, password ->{}},onLoginClick={},onLoginCancelClick={},onLogoutClick={},importerViewModel=importerViewModel)
+            XRayLoginBox(onLoginChanged={ username, password ->{}},onLoginClick={},onLoginCancelClick={},onLogoutClick={},importerViewModel=importerViewModel)
+            onNodeWithText("Log Out").performClick()
         }
     }
 

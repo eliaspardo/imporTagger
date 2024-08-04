@@ -21,6 +21,7 @@ val ktor_version: String by project
 val jvm_version: String by project
 // Version 1.0.0 complains about the Kotlin version
 val multiplatformSettings = "0.7.7"
+val mockkVersion = "1.10.0"
 
 dependencies {
     testImplementation(kotlin("test"))
@@ -29,6 +30,12 @@ dependencies {
     //@OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
     //testImplementation(compose.uiTest)
     testImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.2.1")
+    testImplementation("io.mockk:mockk:${mockkVersion}")
+    // Get rid of
+    // WARNING: Failed to transform class ImporterViewModel
+    //java.lang.IllegalArgumentException: Unsupported class file major version 60
+    // https://github.com/mockk/mockk/issues/397
+    testRuntimeOnly("net.bytebuddy:byte-buddy:1.10.21")
 
 
     implementation(compose.desktop.currentOs)
