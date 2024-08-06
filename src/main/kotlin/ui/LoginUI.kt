@@ -126,10 +126,10 @@ fun XRayLoginBox(
     onLogoutClick: () -> Unit,
     importerViewModel: ImporterViewModel
 ) {
-    if(importerViewModel.loginState==LoginState.DEFAULT||importerViewModel.loginState==LoginState.ERROR||importerViewModel.loginState==LoginState.LOGGED_OUT){
-        LoginBox(onLoginChanged, onLoginClick, onLoginCancelClick, importerViewModel)
-    }else{
+    if(importerViewModel.loginState==LoginState.LOGGED_IN){
         LogoutBox(onLogoutClick,importerViewModel)
+    }else{
+        LoginBox(onLoginChanged, onLoginClick, onLoginCancelClick, importerViewModel)
     }
 }
 
