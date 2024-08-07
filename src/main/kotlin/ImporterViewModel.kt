@@ -43,6 +43,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
 
     /*
      * Lambda callback functions for the UI
+     * Import Button
      */
 
     val onImportClick: () -> Unit = {
@@ -57,6 +58,11 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         importCoroutineScope = CoroutineScope(Dispatchers.Default)
         appState = AppState.DEFAULT
     }
+
+    /*
+     * Lambda callback functions for the UI
+     * Log In
+     */
 
     var onUserNameChanged: (username: String)-> Unit = { username ->
         this.xrayClientID = username
@@ -85,6 +91,11 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         logOut()
     }
 
+    /*
+     * Lambda callback functions for the UI
+     * Feature and Test Info File Choosers
+     */
+
     val onFeatureFileChooserClick: () -> Unit = {
         appState=AppState.FEATURE_FILE_DIALOG_OPEN
     }
@@ -107,6 +118,11 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         appState = AppState.DEFAULT
     }
 
+    /*
+     * Lambda callback functions for the UI
+     * Feature File Listn
+     */
+
     val onRemoveFeatureFile: (featureFile: FeatureFile) -> Unit = { file ->
         featureFileList.remove(file)
     }
@@ -122,6 +138,10 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         }
         else featureFile.isChecked = checked
     }
+
+    /*
+     * Business Logic functions
+     */
 
     private fun getFilesToImport(): Int{
         return featureFileList.filter{file->file.isChecked}.size
@@ -164,7 +184,11 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     }
 
     /*
-    * This function logs in on XRay, sets correct state
+     * Suspend functions that perform network calls such as Log In, Import and Download data from XRay
+     */
+
+    /*
+    * Logs in on XRay, sets correct state
      */
     suspend fun logIn() {
         logger.debug("Logging in")

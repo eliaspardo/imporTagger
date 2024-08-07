@@ -21,48 +21,52 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import snackbar.SnackbarMessageHandler
 import util.KeyValueStorageImpl
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 
 internal class LoginUIKtTest {
 
     lateinit var importerViewModel:ImporterViewModel
+    val initialXrayClientID = "TestClientID"
+    val initialXrayClientSecret = "TestClientSecret"
     @BeforeTest
     fun setup(){
         //val keyValueStorageImpl = KeyValueStorageImpl()
         //val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
         //val snackbarMessageHandler = SnackbarMessageHandler()
-        //importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)ç
+        //importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+        importerViewModel = mockk<ImporterViewModel>()
+        every { importerViewModel.xrayClientID} returns initialXrayClientID
+        every { importerViewModel.xrayClientSecret} returns initialXrayClientSecret
     }
 
-    @OptIn(ExperimentalTestApi::class)
-    @Test
-    fun testXRayLoginBox_showsLogoutButtonWhenLoggedIn() = runComposeUiTest {
-        importerViewModel = mockk<ImporterViewModel>()
-        every { importerViewModel.loginState} returns LoginState.LOGGED_IN
-        every { importerViewModel.appState} returns AppState.DEFAULT
-        every { importerViewModel.xrayClientID} returns "Test"
-        every { importerViewModel.xrayClientSecret} returns "Test"
-        every { importerViewModel.isLogoutButtonEnabled()} returns true
-        every { importerViewModel.onLogoutClick } returns {println("onLogoutClick")}
-
-        setContent {
-            XRayLoginBox(onUserNameChanged = {}, onPasswordChanged = {},onLoginClick={},onLoginCancelClick={},onLogoutClick={importerViewModel.onLogoutClick()},importerViewModel=importerViewModel)
-        }
-        onNodeWithText("Log Out").performClick()
-        verify (exactly = 1){ importerViewModel.onLogoutClick }
-
+    @AfterTest
+    fun tearDown(){
         unmockkAll()
     }
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun testXRayLoginBox_showsLogoutButtonWhenLoggedIn() = runComposeUiTest {
+        every { importerViewModel.loginState} returns LoginState.LOGGED_IN
+        every { importerViewModel.appState} returns AppState.DEFAULT
+        every { importerViewModel.isLogoutButtonEnabled()} returns true
+        every { importerViewModel.onLogoutClick } returns {}
+
+        setContent {
+            XRayLoginBox(onUserNameChanged = {}, onPasswordChanged = {},onLoginClick={},onLoginCancelClick={},onLogoutClick={importerViewModel.onLogoutClick()},importerViewModel=importerViewModel)
+        }
+        onNodeWithText("Logged in as "+initialXrayClientID).assertExists()
+        onNodeWithText("Log Out").performClick()
+        verify { importerViewModel.onLogoutClick }
+
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun testXRayLoginBox_doesntShowLogoutButtonWhenLoggedOut() = runComposeUiTest {
-        importerViewModel = mockk<ImporterViewModel>()
         every { importerViewModel.loginState} returns LoginState.LOGGED_OUT
         every { importerViewModel.appState} returns AppState.DEFAULT
-        every { importerViewModel.xrayClientID} returns "Test"
-        every { importerViewModel.xrayClientSecret} returns "Test"
-        every { importerViewModel.isLogoutButtonEnabled()} returns true
         every { importerViewModel.isLoginButtonEnabled()} returns true
         every { importerViewModel.onLogoutClick } returns {println("onLogoutClick")}
 
@@ -70,7 +74,6 @@ internal class LoginUIKtTest {
             XRayLoginBox(onUserNameChanged = {}, onPasswordChanged = {},onLoginClick={},onLoginCancelClick={},onLogoutClick={importerViewModel.onLogoutClick()},importerViewModel=importerViewModel)
         }
         onNodeWithText("Log Out").assertDoesNotExist()
-        unmockkAll()
     }
 
 }

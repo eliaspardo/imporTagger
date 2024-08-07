@@ -107,13 +107,13 @@ fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp)
-    ){
+    ) {
         Text(text = "Logged in as ${importerViewModel.xrayClientID}", fontSize = 25.sp)
-        if(importerViewModel.appState!=AppState.LOGGING_OUT) {
+        if (importerViewModel.appState != AppState.LOGGING_OUT) {
             Button(onClick = onLogoutClick, enabled = importerViewModel.isLogoutButtonEnabled()) {
                 Text("Log Out")
             }
-        }else {
+        } else {
             CircularProgressIndicator()
         }
     }
