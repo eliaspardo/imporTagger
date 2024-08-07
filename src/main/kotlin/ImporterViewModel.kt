@@ -181,7 +181,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         }.onError {
             isLoggingIn=false
             appState = AppState.DEFAULT
-            // TODO This is not working. Works with LoginState.LOGGED_OUT.
             loginState = LoginState.ERROR
             xrayClientSecret=""
             iUserMessageHandler.showUserMessage("Error logging in "+it)
