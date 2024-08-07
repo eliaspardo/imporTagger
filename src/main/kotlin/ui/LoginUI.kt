@@ -23,7 +23,8 @@ import util.KeyValueStorageImpl
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginBox(
-    onLoginChanged: (username: String, password:String) -> Unit,
+    onUserNameChanged: (username: String) -> Unit,
+    onPasswordChanged: (username: String) -> Unit,
     onLoginClick: () -> Unit,
     onLoginCancelClick: () -> Unit,
     importerViewModel: ImporterViewModel
@@ -39,7 +40,7 @@ fun LoginBox(
             val focusManager = LocalFocusManager.current
             OutlinedTextField(
                 value = importerViewModel.xrayClientID,
-                onValueChange = { onLoginChanged(it, importerViewModel.xrayClientSecret) },
+                onValueChange = { onUserNameChanged(it) },
                 label = { Text("XRay Client ID") },
                 modifier = Modifier.padding(5.dp)
                 .onKeyEvent {
@@ -47,7 +48,7 @@ fun LoginBox(
                         focusManager.moveFocus(FocusDirection.Next)
                         // TODO Tab goes to next field, but writes tab, removing it here, not very elegant
                         // TODO When doing Alt+Tab the last character is deleted
-                        onLoginChanged(importerViewModel.xrayClientID.substring(0, maxOf(importerViewModel.xrayClientID.length - 1,0)), importerViewModel.xrayClientSecret)
+                        onUserNameChanged(importerViewModel.xrayClientID.substring(0, maxOf(importerViewModel.xrayClientID.length - 1,0)))
                         true
                     } else {
                         false
@@ -56,13 +57,13 @@ fun LoginBox(
             )
             OutlinedTextField(
                 value = importerViewModel.xrayClientSecret,
-                onValueChange = { onLoginChanged(importerViewModel.xrayClientID, it) },
+                onValueChange = { onPasswordChanged(it) },
                 label = { Text("XRay Client Secret") },
                 modifier = Modifier.padding(5.dp)
                 .onKeyEvent {
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
-                        onLoginChanged(importerViewModel.xrayClientID, importerViewModel.xrayClientSecret.substring(0, maxOf(importerViewModel.xrayClientSecret.length - 1,0)))
+                        onPasswordChanged(importerViewModel.xrayClientSecret.substring(0, maxOf(importerViewModel.xrayClientSecret.length - 1,0)))
                         true
                     } else {
                         false
@@ -120,7 +121,8 @@ fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
 
 @Composable
 fun XRayLoginBox(
-    onLoginChanged: (username: String, password: String) -> Unit,
+    onUserNameChanged: (username: String) -> Unit,
+    onPasswordChanged: (username: String) -> Unit,
     onLoginClick: () -> Unit,
     onLoginCancelClick: () -> Unit,
     onLogoutClick: () -> Unit,
@@ -129,7 +131,7 @@ fun XRayLoginBox(
     if(importerViewModel.loginState==LoginState.LOGGED_IN){
         LogoutBox(onLogoutClick,importerViewModel)
     }else{
-        LoginBox(onLoginChanged, onLoginClick, onLoginCancelClick, importerViewModel)
+        LoginBox(onUserNameChanged, onPasswordChanged, onLoginClick, onLoginCancelClick, importerViewModel)
     }
 }
 

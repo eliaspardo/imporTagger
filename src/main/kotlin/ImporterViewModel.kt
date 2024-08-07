@@ -58,8 +58,11 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         appState = AppState.DEFAULT
     }
 
-    var onLoginChanged: (username: String, password: String)-> Unit = { username, password ->
+    var onUserNameChanged: (username: String)-> Unit = { username ->
         this.xrayClientID = username
+    }
+
+    var onPasswordChanged: (password: String)-> Unit = { password ->
         this.xrayClientSecret = password
     }
 

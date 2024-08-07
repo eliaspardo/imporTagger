@@ -38,7 +38,8 @@ fun main() = application {
                 Column(Modifier.fillMaxWidth(), Arrangement.Center) {
                     Row(Modifier.fillMaxWidth(), Arrangement.Center) {
                         XRayLoginBox(
-                            importerViewModel.onLoginChanged,
+                            importerViewModel.onUserNameChanged,
+                            importerViewModel.onPasswordChanged,
                             importerViewModel.onLoginClick,
                             importerViewModel.onLoginCancelClick,
                             importerViewModel.onLogoutClick,
