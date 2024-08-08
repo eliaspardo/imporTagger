@@ -12,13 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.CoroutineScope
 import snackbar.SnackbarMessageHandler
 import util.KeyValueStorageImpl
+
+
+const val XRAY_CLIENT_ID_FIELD = "xRayClientIDField"
+const val XRAY_CLIENT_SECRET_FIELD = "xRayClientSecretField"
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -42,7 +46,7 @@ fun LoginBox(
                 value = importerViewModel.xrayClientID,
                 onValueChange = { onUserNameChanged(it) },
                 label = { Text("XRay Client ID") },
-                modifier = Modifier.padding(5.dp)
+                modifier = Modifier.padding(5.dp).testTag(XRAY_CLIENT_ID_FIELD)
                 .onKeyEvent {
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
@@ -59,7 +63,7 @@ fun LoginBox(
                 value = importerViewModel.xrayClientSecret,
                 onValueChange = { onPasswordChanged(it) },
                 label = { Text("XRay Client Secret") },
-                modifier = Modifier.padding(5.dp)
+                modifier = Modifier.padding(5.dp).testTag(XRAY_CLIENT_SECRET_FIELD)
                 .onKeyEvent {
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
