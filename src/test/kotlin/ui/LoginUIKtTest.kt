@@ -1,6 +1,8 @@
 package ui
 
 import ImporterViewModel
+import LOG_IN_BUTTON
+import LOG_OUT_BUTTON
 import XRAY_CLIENT_ID_FIELD
 import XRAY_CLIENT_SECRET_FIELD
 import XRayLoginBox
@@ -42,7 +44,7 @@ internal class LoginUIKtTest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun testXRayLoginBox_showsLogoutButtonWhenLoggedIn() = runComposeUiTest {
+    fun testXRayLoginBox_loggedIn_showLogoutButtonAndLoggedInMessage() = runComposeUiTest {
         every { importerViewModelMock.loginState} returns LoginState.LOGGED_IN
         every { importerViewModelMock.appState} returns AppState.DEFAULT
         every { importerViewModelMock.xrayClientID} returns initialXrayClientID
@@ -51,8 +53,10 @@ internal class LoginUIKtTest {
         every { importerViewModelMock.onLogoutClick } returns {}
 
         setContent {
-            XRayLoginBox(onUserNameChanged = {}, onPasswordChanged = {},onLoginClick={},onLoginCancelClick={},onLogoutClick={importerViewModelMock.onLogoutClick()},importerViewModel=importerViewModelMock)
+            XRayLoginBox(onUserNameChanged = {}, onPasswordChanged = {},onLoginClick={},onLoginCancelClick={},onLogoutClick=importerViewModelMock.onLogoutClick,importerViewModel=importerViewModelMock)
         }
+        onNodeWithTag(LOG_IN_BUTTON).assertDoesNotExist()
+        onNodeWithTag(LOG_OUT_BUTTON).assertExists()
         onNodeWithText("Logged in as "+initialXrayClientID).assertExists()
         onNodeWithText("Log Out").performClick()
         verify { importerViewModelMock.onLogoutClick }
@@ -61,7 +65,7 @@ internal class LoginUIKtTest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun testXRayLoginBox_doesntShowLogoutButtonWhenLoggedOut() = runComposeUiTest {
+    fun testXRayLoginBox_loggedOut_showLogInButtonDoNotShowLogOutButton() = runComposeUiTest {
         every { importerViewModelMock.loginState} returns LoginState.LOGGED_OUT
         every { importerViewModelMock.appState} returns AppState.DEFAULT
         every { importerViewModelMock.xrayClientID} returns initialXrayClientID
@@ -72,14 +76,15 @@ internal class LoginUIKtTest {
         setContent {
             XRayLoginBox(onUserNameChanged = {}, onPasswordChanged = {},onLoginClick={},onLoginCancelClick={},onLogoutClick={importerViewModelMock.onLogoutClick()},importerViewModel=importerViewModelMock)
         }
-        onNodeWithText("Log Out").assertDoesNotExist()
+        onNodeWithText(LOG_OUT_BUTTON).assertDoesNotExist()
+        onNodeWithTag(LOG_IN_BUTTON).assertExists()
     }
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun testXRayLoginBox_inputtingTextFieldsUpdatesTextFields() = runComposeUiTest {
+    fun testXRayLoginBox_loggedOut_inputtingTextFieldsUpdatesTextFieldsAndViewModel() = runComposeUiTest {
         setContent {
-            XRayLoginBox(onUserNameChanged = importerViewModel.onUserNameChanged, onPasswordChanged = importerViewModel.onPasswordChanged, onLoginClick={},onLoginCancelClick={},onLogoutClick={importerViewModelMock.onLogoutClick()},importerViewModel=importerViewModel)
+            XRayLoginBox(onUserNameChanged = importerViewModel.onUserNameChanged, onPasswordChanged = importerViewModel.onPasswordChanged, onLoginClick={},onLoginCancelClick={},onLogoutClick=importerViewModel.onLogoutClick,importerViewModel=importerViewModel)
         }
         onNodeWithTag(XRAY_CLIENT_ID_FIELD).performTextInput(updatedXrayClientID)
         onNodeWithTag(XRAY_CLIENT_ID_FIELD).assertTextEquals("XRay Client ID", updatedXrayClientID)
@@ -89,6 +94,34 @@ internal class LoginUIKtTest {
 
         assert(importerViewModel.xrayClientID==updatedXrayClientID)
         assert(importerViewModel.xrayClientSecret==updatedXrayClientSecret)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun testXRayLoginBox_loggedOut_logInButtonOnlyEnabledAfterBothUserNameAndPasswordInputted() = runComposeUiTest {
+        setContent {
+            XRayLoginBox(onUserNameChanged = importerViewModel.onUserNameChanged, onPasswordChanged = importerViewModel.onPasswordChanged, onLoginClick=importerViewModel.onLoginClick,onLoginCancelClick={},onLogoutClick=importerViewModel.onLogoutClick,importerViewModel=importerViewModel)
+        }
+        onNodeWithTag(XRAY_CLIENT_ID_FIELD).performTextInput(updatedXrayClientID)
+        onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput(updatedXrayClientSecret)
+        onNodeWithTag(LOG_IN_BUTTON).assertIsEnabled()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun testXRayLoginBox_loggedOut_logInButtonDisabledIfNotBothUserNameAndPasswordInputted() = runComposeUiTest {
+        setContent {
+            XRayLoginBox(onUserNameChanged = importerViewModel.onUserNameChanged, onPasswordChanged = importerViewModel.onPasswordChanged, onLoginClick=importerViewModel.onLoginClick,onLoginCancelClick={},onLogoutClick=importerViewModel.onLogoutClick,importerViewModel=importerViewModel)
+        }
+        onNodeWithTag(LOG_IN_BUTTON).assertIsNotEnabled()
+
+        onNodeWithTag(XRAY_CLIENT_ID_FIELD).performTextInput(updatedXrayClientID)
+        onNodeWithTag(LOG_IN_BUTTON).assertIsNotEnabled()
+
+        onNodeWithTag(XRAY_CLIENT_ID_FIELD).performTextClearance()
+
+        onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput(updatedXrayClientSecret)
+        onNodeWithTag(LOG_IN_BUTTON).assertIsNotEnabled()
     }
 
 }

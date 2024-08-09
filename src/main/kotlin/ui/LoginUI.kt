@@ -23,6 +23,8 @@ import util.KeyValueStorageImpl
 
 const val XRAY_CLIENT_ID_FIELD = "xRayClientIDField"
 const val XRAY_CLIENT_SECRET_FIELD = "xRayClientSecretField"
+const val LOG_OUT_BUTTON = "logOutButton"
+const val LOG_IN_BUTTON = "logInButton"
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -94,7 +96,7 @@ fun LoginBox(
             )
         }
         if (importerViewModel.appState != AppState.LOGGING_IN) {
-            Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
+            Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled(), modifier = Modifier.testTag(LOG_IN_BUTTON)) {
                 Text("Log In")
             }
         } else {
@@ -114,7 +116,7 @@ fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
     ) {
         Text(text = "Logged in as ${importerViewModel.xrayClientID}", fontSize = 25.sp)
         if (importerViewModel.appState != AppState.LOGGING_OUT) {
-            Button(onClick = onLogoutClick, enabled = importerViewModel.isLogoutButtonEnabled()) {
+            Button(onClick = onLogoutClick, enabled = importerViewModel.isLogoutButtonEnabled(), modifier = Modifier.testTag(LOG_OUT_BUTTON)) {
                 Text("Log Out")
             }
         } else {
