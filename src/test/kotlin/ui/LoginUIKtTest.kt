@@ -3,15 +3,18 @@ package ui
 import ImporterViewModel
 import LOG_IN_BUTTON
 import LOG_OUT_BUTTON
+import MockXRayRESTClient
 import XRAY_CLIENT_ID_FIELD
 import XRAY_CLIENT_SECRET_FIELD
 import XRayLoginBox
 import XRayRESTClient
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.test.*
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -122,6 +125,27 @@ internal class LoginUIKtTest {
 
         onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput(updatedXrayClientSecret)
         onNodeWithTag(LOG_IN_BUTTON).assertIsNotEnabled()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun testXRayLoginBox_logIn_throwsUnknownError() = runComposeUiTest {
+        //val keyValueStorageImpl = KeyValueStorageImpl()
+        //val snackbarMessageHandler = SnackbarMessageHandler()
+        //val MockedXRayRESTClient = MockXRayRESTClient(keyValueStorageImpl)
+        //val importerViewModelWithMockedRESTClient = ImporterViewModel(MockedXRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+        setContent {
+            XRayLoginBox(onUserNameChanged = importerViewModel.onUserNameChanged, onPasswordChanged = importerViewModel.onPasswordChanged, onLoginClick=importerViewModel.onLoginClick,onLoginCancelClick={},onLogoutClick=importerViewModel.onLogoutClick,importerViewModel=importerViewModel)
+        }
+
+        onNodeWithTag(XRAY_CLIENT_ID_FIELD).performTextInput(updatedXrayClientID)
+        onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput(updatedXrayClientSecret)
+        onNodeWithTag(LOG_IN_BUTTON).performClick()
+        runBlocking {
+            //awaitIdle()
+            delay(10000)
+            onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextEquals("XRay Client Secret", "")
+        }
     }
 
 }
