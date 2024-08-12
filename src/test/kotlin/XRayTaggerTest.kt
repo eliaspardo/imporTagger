@@ -2,6 +2,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import snackbar.SnackbarMessageHandler
+import util.Config
 import kotlin.test.*
 import kotlin.test.Test
 
@@ -13,7 +14,8 @@ internal class XRayTaggerTest{
 
     @BeforeTest
     fun setup(){
-        xRayTagger = XRayTagger(snackbarMessageHandler)
+        val config = Config("defaults.properties")
+        xRayTagger = XRayTagger(snackbarMessageHandler, config)
         fileManager = FileManager();
     }
 

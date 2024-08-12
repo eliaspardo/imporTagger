@@ -15,6 +15,7 @@ import androidx.compose.ui.window.application
 import snackbar.LocalSnackbarController
 import snackbar.ProvideSnackbarController
 import snackbar.SnackbarMessageHandler
+import util.Config
 import util.KeyValueStorageImpl
 
 
@@ -23,7 +24,8 @@ fun main() = application {
     val keyValueStorageImpl = KeyValueStorageImpl()
     val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
     val snackbarMessageHandler = SnackbarMessageHandler()
-    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+    val config = Config("defaults.properties")
+    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler,config)
 
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
         val snackbarHostState = remember { SnackbarHostState() }

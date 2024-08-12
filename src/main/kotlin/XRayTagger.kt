@@ -1,15 +1,23 @@
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.stringType
 import mu.KotlinLogging
 import networking.IXRayRESTClient
-import snackbar.SnackbarMessageHandler
 import snackbar.UserMessageHandler
+import util.Config
 import util.onError
 import util.onSuccess
 import java.io.File
 
-class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
-    val testTag = "@TEST_"
-    val preconditionTag = "# PRECON_"
-    val preconditionPrefix = "Background"
+class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Config) {
+    private val testTagKey = Key("testTag", stringType)
+    private val preconditionTagKey = Key("preconditionTag", stringType)
+    private val preconditionPrefixKey = Key("preconditionPrefix", stringType)
+    private val testTag = config.configProp.get(testTagKey)
+    private val preconditionTag = config.configProp.get(preconditionTagKey)
+    private val preconditionPrefix = config.configProp.get(preconditionPrefixKey)
+    //private val testTag = "TEST"
+    //private val preconditionTag = "TEST"
+    //private val preconditionPrefix = "TEST"
     private val logger = KotlinLogging.logger {}
 
     fun tagTest(scenario: String, testID: String, featureFileLines: MutableList<String>) : MutableList<String> {

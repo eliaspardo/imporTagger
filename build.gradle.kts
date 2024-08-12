@@ -41,6 +41,8 @@ dependencies {
     implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
     implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.1.1")
 
+    implementation("com.natpryce:konfig:1.6.10.0")
+
 }
 
 tasks.test {

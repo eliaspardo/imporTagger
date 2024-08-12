@@ -6,11 +6,17 @@ import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
+import util.Config
 import util.KeyValueStorage
 import util.onError
 import util.onSuccess
 
-class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private var keyValueStorage: KeyValueStorage, private var iUserMessageHandler: UserMessageHandler) {
+class ImporterViewModel(
+    private val iXRayRESTClient: IXRayRESTClient,
+    private val keyValueStorage: KeyValueStorage,
+    private val iUserMessageHandler: UserMessageHandler,
+    private val config: Config
+) {
 
     private val logger = KotlinLogging.logger {}
     private var loginCoroutineScope = CoroutineScope(Dispatchers.Default)
@@ -217,7 +223,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
                 logger.info("Import and tagging OK. Starting Tagging.");
                 // On Success start tagging tests and preconditions
                 val fileManager = FileManager()
-                val xRayTagger = XRayTagger(iUserMessageHandler)
+                val xRayTagger = XRayTagger(iUserMessageHandler,config)
                 if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
                 if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
 
