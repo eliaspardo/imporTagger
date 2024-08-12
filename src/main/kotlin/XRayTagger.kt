@@ -9,12 +9,9 @@ import util.onSuccess
 import java.io.File
 
 class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Config) {
-    private val testTagKey = Key("testTag", stringType)
-    private val preconditionTagKey = Key("preconditionTag", stringType)
-    private val preconditionPrefixKey = Key("preconditionPrefix", stringType)
-    private val testTag = config.configProp.get(testTagKey)
-    private val preconditionTag = config.configProp.get(preconditionTagKey)
-    private val preconditionPrefix = config.configProp.get(preconditionPrefixKey)
+    private val testTag = config.getProperty("testTag")
+    private val preconditionTag = config.getProperty("preconditionTag")
+    private val preconditionPrefix = config.getProperty("preconditionPrefix")
     //private val testTag = "TEST"
     //private val preconditionTag = "TEST"
     //private val preconditionPrefix = "TEST"

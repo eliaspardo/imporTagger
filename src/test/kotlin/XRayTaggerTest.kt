@@ -14,7 +14,8 @@ internal class XRayTaggerTest{
 
     @BeforeTest
     fun setup(){
-        val config = Config("defaults.properties")
+        //val config = Config("src/main/resources/defaults.properties")
+        val config = Config("resources/defaults.properties")
         xRayTagger = XRayTagger(snackbarMessageHandler, config)
         fileManager = FileManager();
     }

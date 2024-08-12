@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.useResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import snackbar.LocalSnackbarController
@@ -17,6 +18,7 @@ import snackbar.ProvideSnackbarController
 import snackbar.SnackbarMessageHandler
 import util.Config
 import util.KeyValueStorageImpl
+import java.nio.file.Paths
 
 
 fun main() = application {
@@ -24,7 +26,8 @@ fun main() = application {
     val keyValueStorageImpl = KeyValueStorageImpl()
     val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
     val snackbarMessageHandler = SnackbarMessageHandler()
-    val config = Config("defaults.properties")
+    val config = Config("resources/defaults.properties")
+    //val config = Config(System.getProperty("compose.application.resources.dir")+"/defaults.properties")
     val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler,config)
 
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {

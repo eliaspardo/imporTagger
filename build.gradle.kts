@@ -62,10 +62,13 @@ compose.desktop {
             packageVersion = "1.0.0"
             windows {
                 iconFile.set(project.file("src/main/resources/icon.ico"))
+                //project.file("src/main/resources/defaults.properties")
             }
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
         }
     }
 }
+
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = jvm_version
