@@ -12,9 +12,6 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
     private val testTag = config.getProperty("testTag")
     private val preconditionTag = config.getProperty("preconditionTag")
     private val preconditionPrefix = config.getProperty("preconditionPrefix")
-    //private val testTag = "TEST"
-    //private val preconditionTag = "TEST"
-    //private val preconditionPrefix = "TEST"
     private val logger = KotlinLogging.logger {}
 
     fun tagTest(scenario: String, testID: String, featureFileLines: MutableList<String>) : MutableList<String> {

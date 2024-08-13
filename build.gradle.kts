@@ -1,3 +1,4 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -60,11 +61,11 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "XRay Importer"
             packageVersion = "1.0.0"
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+            modules("java.naming")
             windows {
                 iconFile.set(project.file("src/main/resources/icon.ico"))
-                //project.file("src/main/resources/defaults.properties")
             }
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
         }
     }
 }
