@@ -5,10 +5,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.AwtWindow
+import util.FileManager
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
 
+
+class FeatureFileChooser() {
+    var dialogVisible by mutableStateOf(false)
+}
 @Composable
 fun MultipleFileDialog(
     parent: Frame? = null,
@@ -29,18 +34,26 @@ fun MultipleFileDialog(
 )
 
 @Composable
-fun FeatureFileChooserUI(onFeatureFileChooserClick: () -> Unit, onFeatureFileChooserClose: (result: Array<File>?) -> Unit, importerViewModel: ImporterViewModel) {
+fun FeatureFileChooserUI(onFeatureFileChooserClose: (result: Array<File>?) -> Unit, importerViewModel: ImporterViewModel, featureFileChooser: FeatureFileChooser) {
     Button(
-        onClick = onFeatureFileChooserClick,
+        onClick = {featureFileChooser.dialogVisible=true},
         enabled = importerViewModel.isFileChooserButtonEnabled(),
         modifier = Modifier.padding(5.dp)) {
         Text("Select Feature Files")
     }
-    if(importerViewModel.appState==AppState.FEATURE_FILE_DIALOG_OPEN) {
+    if(featureFileChooser.dialogVisible==true) {
+        importerViewModel.dialogOpened()
         MultipleFileDialog(
             onCloseRequest = { file ->
                 onFeatureFileChooserClose(file)
+                //importerViewModel.dialogClosed()
+                featureFileChooser.dialogVisible=false
             }
         )
     }
+}
+@Composable
+fun FeatureFileChooserUIStateful(onFeatureFileChooserClose: (result: Array<File>?) -> Unit, importerViewModel: ImporterViewModel){
+    val featureFileChooser = FeatureFileChooser()
+    FeatureFileChooserUI(onFeatureFileChooserClose, importerViewModel, featureFileChooser)
 }

@@ -57,13 +57,11 @@ fun main() = application {
                         )
                     }
                     Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-                        FeatureFileChooserUI(
-                            importerViewModel.onFeatureFileChooserClick,
+                        FeatureFileChooserUIStateful(
                             importerViewModel.onFeatureFileChooserClose,
                             importerViewModel
                         )
-                        TestInfoFileChooserUI(
-                            importerViewModel.onTestInfoFileChooserClick,
+                        TestInfoFileChooserUIStateful(
                             importerViewModel.onTestInfoFileChooserClose,
                             importerViewModel
                         )

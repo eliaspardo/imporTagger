@@ -6,7 +6,6 @@ import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
-import ui.PropertiesDialog
 import util.*
 
 class ImporterViewModel(
@@ -85,12 +84,8 @@ class ImporterViewModel(
         logOut()
     }
 
-    val onFeatureFileChooserClick: () -> Unit = {
-        appState=AppState.FEATURE_FILE_DIALOG_OPEN
-    }
-
     val onTestInfoFileChooserClick: () -> Unit = {
-        appState=AppState.TEST_INFO_FILE_DIALOG_OPEN
+        appState=AppState.DIALOG_OPEN
     }
 
     val onFeatureFileChooserClose: (result: Array<java.io.File>?) -> Unit ={ files->
@@ -139,6 +134,10 @@ class ImporterViewModel(
         return appState==AppState.DEFAULT
     }
 
+    fun isPropertiesDialogButtonEnabled(): Boolean{
+        return appState==AppState.DEFAULT
+    }
+
     fun isImportButtonEnabled(): Boolean{
         return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0&&testInfoFile!=null)
     }
@@ -163,11 +162,11 @@ class ImporterViewModel(
         return this.featureFileList.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size!=0
     }
 
-    fun propertiesDialogOpened(){
-        appState=AppState.PROPERTIES_DIALOG_OPEN
+    fun dialogOpened(){
+        appState=AppState.DIALOG_OPEN
     }
 
-    fun propertiesDialogClosed(){
+    fun dialogClosed(){
         appState=AppState.DEFAULT
     }
     /*
@@ -251,7 +250,7 @@ class ImporterViewModel(
 }
 
 enum class AppState {
-    DEFAULT, IMPORTING, FEATURE_FILE_DIALOG_OPEN, TEST_INFO_FILE_DIALOG_OPEN, PROPERTIES_DIALOG_OPEN, LOGGING_IN, LOGGING_OUT
+    DEFAULT, IMPORTING, DIALOG_OPEN, LOGGING_IN, LOGGING_OUT
 }
 
 enum class LoginState {

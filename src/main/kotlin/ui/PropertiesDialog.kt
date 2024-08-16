@@ -4,7 +4,6 @@ import ImporterViewModel
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,14 +27,14 @@ class PropertiesDialog() {
 @Composable
 fun PropertiesDialogUI(importerViewModel: ImporterViewModel){
     val propertiesDialog = PropertiesDialog()
-    PropertiesDialogButton(propertiesDialog)
+    PropertiesDialogButton(propertiesDialog,importerViewModel)
     PropertiesDialogDialog(propertiesDialog,importerViewModel)
 }
 
 @Composable
 fun PropertiesDialogDialog(propertiesDialog: PropertiesDialog, importerViewModel: ImporterViewModel){
-    if(propertiesDialog.dialogVisible)importerViewModel.propertiesDialogOpened()
-    Dialog(visible = propertiesDialog.dialogVisible, state = DialogState(width=700.dp),onCloseRequest = {propertiesDialog.dialogVisible=false;importerViewModel.propertiesDialogClosed()}, title = propertiesDialog.title, resizable = true ) {
+    if(propertiesDialog.dialogVisible)importerViewModel.dialogOpened()
+    Dialog(visible = propertiesDialog.dialogVisible, state = DialogState(width=700.dp),onCloseRequest = {propertiesDialog.dialogVisible=false;importerViewModel.dialogClosed()}, title = propertiesDialog.title, resizable = true ) {
         Column(Modifier.fillMaxWidth()) {
             Text("File Location: "+propertiesDialog.propertiesFileLocation)
             for (line in propertiesDialog.propertiesFileLines){
@@ -46,8 +45,8 @@ fun PropertiesDialogDialog(propertiesDialog: PropertiesDialog, importerViewModel
 }
 
 @Composable
-fun PropertiesDialogButton(propertiesDialog: PropertiesDialog){
-    Button(onClick = {propertiesDialog.dialogVisible=true},modifier = Modifier.padding(5.dp)){
+fun PropertiesDialogButton(propertiesDialog: PropertiesDialog,importerViewModel: ImporterViewModel){
+    Button(onClick = {propertiesDialog.dialogVisible=true},enabled = importerViewModel.isPropertiesDialogButtonEnabled(), modifier = Modifier.padding(5.dp)){
         Text("See default.properties")
     }
 }
