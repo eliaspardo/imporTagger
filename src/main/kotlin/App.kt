@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import snackbar.LocalSnackbarController
@@ -31,6 +32,8 @@ fun main() = application {
     println(System.getProperty("compose.application.resources.dir")+File.separator+"default.properties")
     val config = Config(System.getProperty("compose.application.resources.dir")+File.separator+"default.properties")
     val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler,config)
+    var firstTimeRunning = true
+    var dialogVisible = true
 
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -78,13 +81,13 @@ fun main() = application {
                     }
                     FeatureFileListUI(importerViewModel.onRemoveFeatureFile, importerViewModel)
                 }
-                /*
-                // TODO For some reason this is triggering the notification twice
-                if(!importerViewModel.importResponseBody.errors.isEmpty()){
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar(importerViewModel.importResponseBody.errors.toString())
-                    }
-                }*/
+                if(firstTimeRunning){
+                    snackbarMessageHandler.showUserMessage("Customize your defaults in "+System.getProperty("compose.application.resources.dir")+File.separator+"default.properties")
+                    firstTimeRunning=false
+                }
+                Dialog(visible = dialogVisible, onCloseRequest = { dialogVisible = false }, title = "Current default.properties") {
+                    Text("dialog content")
+                }
             }
         }
     }
