@@ -3,12 +3,13 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import snackbar.SnackbarMessageHandler
 import util.Config
+import util.FileManager
 import kotlin.test.*
 import kotlin.test.Test
 
 internal class XRayTaggerTest{
     lateinit var xRayTagger:XRayTagger;
-    lateinit var fileManager:FileManager;
+    lateinit var fileManager: FileManager;
     var snackbarMessageHandler = SnackbarMessageHandler()
 
 

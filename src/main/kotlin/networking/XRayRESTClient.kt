@@ -13,6 +13,7 @@ import util.*
 import java.io.File
 
 class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTClient{
+    private val projectKey = Constants.PROJECT_KEY
     private val logger = KotlinLogging.logger {}
     override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String, importerViewModel: ImporterViewModel): Result<LoginResponse, NetworkError> {
         logger.info("Logging into XRay")
@@ -62,7 +63,7 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
         }?: run {return Result.Error(NetworkError.NO_TOKEN)}
         try{
-            val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey=TEST") {
+            val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey="+projectKey) {
                 setBody(
                     MultiPartFormDataContent(
                         formData {

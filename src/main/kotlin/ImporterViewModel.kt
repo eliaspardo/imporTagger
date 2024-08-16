@@ -6,10 +6,8 @@ import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
-import util.Config
-import util.KeyValueStorage
-import util.onError
-import util.onSuccess
+import ui.PropertiesDialog
+import util.*
 
 class ImporterViewModel(
     private val iXRayRESTClient: IXRayRESTClient,
@@ -165,6 +163,13 @@ class ImporterViewModel(
         return this.featureFileList.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size!=0
     }
 
+    fun propertiesDialogOpened(){
+        appState=AppState.PROPERTIES_DIALOG_OPEN
+    }
+
+    fun propertiesDialogClosed(){
+        appState=AppState.DEFAULT
+    }
     /*
     * This function logs in on XRay, sets correct state
      */
@@ -246,7 +251,7 @@ class ImporterViewModel(
 }
 
 enum class AppState {
-    DEFAULT, IMPORTING, FEATURE_FILE_DIALOG_OPEN, TEST_INFO_FILE_DIALOG_OPEN, LOGGING_IN, LOGGING_OUT
+    DEFAULT, IMPORTING, FEATURE_FILE_DIALOG_OPEN, TEST_INFO_FILE_DIALOG_OPEN, PROPERTIES_DIALOG_OPEN, LOGGING_IN, LOGGING_OUT
 }
 
 enum class LoginState {
