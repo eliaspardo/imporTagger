@@ -2,18 +2,24 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import snackbar.SnackbarMessageHandler
+import util.Config
+import util.FileManager
+import java.io.File
+import java.nio.file.Paths
 import kotlin.test.*
 import kotlin.test.Test
 
 internal class XRayTaggerTest{
     lateinit var xRayTagger:XRayTagger;
-    lateinit var fileManager:FileManager;
+    lateinit var fileManager: FileManager;
     var snackbarMessageHandler = SnackbarMessageHandler()
 
 
     @BeforeTest
     fun setup(){
-        xRayTagger = XRayTagger(snackbarMessageHandler)
+        System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+File.separator+"resources"+File.separator+"common")
+        val config = Config(Constants.PROPERTIES_FILE_PATH)
+        xRayTagger = XRayTagger(snackbarMessageHandler, config)
         fileManager = FileManager();
     }
 

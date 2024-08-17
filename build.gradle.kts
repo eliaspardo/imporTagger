@@ -1,3 +1,4 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -41,6 +42,8 @@ dependencies {
     implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
     implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.1.1")
 
+    implementation("com.natpryce:konfig:1.6.10.0")
+
 }
 
 tasks.test {
@@ -58,12 +61,15 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "XRay Importer"
             packageVersion = "1.0.0"
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+            modules("java.naming")
             windows {
                 iconFile.set(project.file("src/main/resources/icon.ico"))
             }
         }
     }
 }
+
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = jvm_version

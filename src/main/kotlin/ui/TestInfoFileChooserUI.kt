@@ -9,6 +9,11 @@ import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
 
+
+class TestInfoFileChooser() {
+    var dialogVisible by mutableStateOf(false)
+}
+
 @Composable
 fun SingleFileDialog(
     parent: Frame? = null,
@@ -29,18 +34,27 @@ fun SingleFileDialog(
 )
 
 @Composable
-fun TestInfoFileChooserUI(onTestInfoFileChooserClick: () -> Unit, onTestInfoFileChooserClose: (result: File?) -> Unit,importerViewModel: ImporterViewModel) {
+fun TestInfoFileChooserUI(onTestInfoFileChooserClose: (result: File?) -> Unit,importerViewModel: ImporterViewModel, testInfoFileChooser: TestInfoFileChooser) {
     Button(
-        onClick = onTestInfoFileChooserClick,
+        onClick = {testInfoFileChooser.dialogVisible=true},
         enabled = importerViewModel.isFileChooserButtonEnabled(),
         modifier = Modifier.padding(5.dp)) {
         Text("Select Test Info File")
     }
-    if(importerViewModel.appState==AppState.TEST_INFO_FILE_DIALOG_OPEN) {
+    if(testInfoFileChooser.dialogVisible==true) {
+        importerViewModel.dialogOpened()
         SingleFileDialog(
             onCloseRequest = { file ->
                 onTestInfoFileChooserClose(file)
+                //importerViewModel.dialogClosed()
+                testInfoFileChooser.dialogVisible=false
             }
         )
     }
+}
+
+@Composable
+fun TestInfoFileChooserUIStateful(onTestInfoFileChooserClose: (result: File?) -> Unit,importerViewModel: ImporterViewModel){
+    val testInfoFileChooser = TestInfoFileChooser()
+    TestInfoFileChooserUI(onTestInfoFileChooserClose,importerViewModel,testInfoFileChooser)
 }
