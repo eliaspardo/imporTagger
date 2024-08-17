@@ -4,6 +4,8 @@ import org.junit.jupiter.params.provider.MethodSource
 import snackbar.SnackbarMessageHandler
 import util.Config
 import util.FileManager
+import java.io.File
+import java.nio.file.Paths
 import kotlin.test.*
 import kotlin.test.Test
 
@@ -15,8 +17,8 @@ internal class XRayTaggerTest{
 
     @BeforeTest
     fun setup(){
-        //val config = Config("src/main/resources/defaults.properties")
-        val config = Config("resources/defaults.properties")
+        System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+File.separator+"resources"+File.separator+"common")
+        val config = Config(Constants.PROPERTIES_FILE_PATH)
         xRayTagger = XRayTagger(snackbarMessageHandler, config)
         fileManager = FileManager();
     }
