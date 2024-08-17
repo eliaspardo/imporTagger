@@ -142,6 +142,10 @@ class ImporterViewModel(
         return appState==AppState.DEFAULT
     }
 
+    fun isPropertiesDialogButtonEnabled(): Boolean{
+        return appState==AppState.DEFAULT
+    }
+
     fun isImportButtonEnabled(): Boolean{
         return (appState==AppState.DEFAULT&&loginState==LoginState.LOGGED_IN&&getFilesToImport()>0&&testInfoFile!=null)
     }

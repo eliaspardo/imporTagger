@@ -19,7 +19,10 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import snackbar.SnackbarMessageHandler
+import util.Config
 import util.KeyValueStorageImpl
+import java.io.File
+import java.nio.file.Paths
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 
@@ -33,10 +36,12 @@ internal class LoginUIKtTest {
     val updatedXrayClientSecret = "UpdatedTestClientSecret"
     @BeforeTest
     fun setup(){
+        System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+ File.separator+"resources"+ File.separator+"common")
+        val config = Config(Constants.PROPERTIES_FILE_PATH)
         val keyValueStorageImpl = KeyValueStorageImpl()
         val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
         val snackbarMessageHandler = SnackbarMessageHandler()
-        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler,config)
         importerViewModelMock = mockk<ImporterViewModel>()
     }
 

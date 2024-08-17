@@ -141,13 +141,3 @@ fun XRayLoginBox(
     }
 }
 
-@Preview
-@Composable
-fun Test(){
-    val keyValueStorageImpl = KeyValueStorageImpl()
-    val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
-    val snackbarMessageHandler = SnackbarMessageHandler()
-    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
-    LogoutBox(onLogoutClick={},importerViewModel)
-}
-

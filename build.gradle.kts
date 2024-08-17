@@ -51,6 +51,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.3")
     implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
     implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.1.1")
+    implementation("com.natpryce:konfig:1.6.10.0")
 }
 
 tasks.test {
@@ -68,6 +69,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "XRay Importer"
             packageVersion = "1.0.0"
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             windows {
                 iconFile.set(project.file("src/main/resources/icon.ico"))
             }
