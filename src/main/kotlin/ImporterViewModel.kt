@@ -6,11 +6,14 @@ import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
-import util.KeyValueStorage
-import util.onError
-import util.onSuccess
+import util.*
 
-class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private var keyValueStorage: KeyValueStorage, private var iUserMessageHandler: UserMessageHandler) {
+class ImporterViewModel(
+    private val iXRayRESTClient: IXRayRESTClient,
+    private val keyValueStorage: KeyValueStorage,
+    private val iUserMessageHandler: UserMessageHandler,
+    private val config: Config
+) {
 
     private val logger = KotlinLogging.logger {}
     private var loginCoroutineScope = CoroutineScope(Dispatchers.Default)
@@ -40,10 +43,8 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
     var importResponseMessage by mutableStateOf("")
     var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
 
-
     /*
      * Lambda callback functions for the UI
-     * Import Button
      */
 
     val onImportClick: () -> Unit = {
@@ -91,17 +92,8 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         logOut()
     }
 
-    /*
-     * Lambda callback functions for the UI
-     * Feature and Test Info File Choosers
-     */
-
-    val onFeatureFileChooserClick: () -> Unit = {
-        appState=AppState.FEATURE_FILE_DIALOG_OPEN
-    }
-
     val onTestInfoFileChooserClick: () -> Unit = {
-        appState=AppState.TEST_INFO_FILE_DIALOG_OPEN
+        appState=AppState.DIALOG_OPEN
     }
 
     val onFeatureFileChooserClose: (result: Array<java.io.File>?) -> Unit ={ files->
@@ -118,11 +110,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         appState = AppState.DEFAULT
     }
 
-    /*
-     * Lambda callback functions for the UI
-     * Feature File Listn
-     */
-
     val onRemoveFeatureFile: (featureFile: FeatureFile) -> Unit = { file ->
         featureFileList.remove(file)
     }
@@ -138,10 +125,6 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         }
         else featureFile.isChecked = checked
     }
-
-    /*
-     * Business Logic functions
-     */
 
     private fun getFilesToImport(): Int{
         return featureFileList.filter{file->file.isChecked}.size
@@ -183,12 +166,15 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
         return this.featureFileList.filter{ existingFile->existingFile.name.equals(file.name)&&existingFile.path.equals(file.absolutePath)}.size!=0
     }
 
-    /*
-     * Suspend functions that perform network calls such as Log In, Import and Download data from XRay
-     */
+    fun dialogOpened(){
+        appState=AppState.DIALOG_OPEN
+    }
 
+    fun dialogClosed(){
+        appState=AppState.DEFAULT
+    }
     /*
-    * Logs in on XRay, sets correct state
+    * This function logs in on XRay, sets correct state
      */
     suspend fun logIn() {
         logger.debug("Logging in")
@@ -244,7 +230,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
                 logger.info("Import and tagging OK. Starting Tagging.");
                 // On Success start tagging tests and preconditions
                 val fileManager = FileManager()
-                val xRayTagger = XRayTagger(iUserMessageHandler)
+                val xRayTagger = XRayTagger(iUserMessageHandler,config)
                 if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
                 if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
 
@@ -267,7 +253,7 @@ class ImporterViewModel(private var iXRayRESTClient: IXRayRESTClient, private va
 }
 
 enum class AppState {
-    DEFAULT, IMPORTING, FEATURE_FILE_DIALOG_OPEN, TEST_INFO_FILE_DIALOG_OPEN, LOGGING_IN, LOGGING_OUT
+    DEFAULT, IMPORTING, DIALOG_OPEN, LOGGING_IN, LOGGING_OUT
 }
 
 enum class LoginState {

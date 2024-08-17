@@ -32,7 +32,6 @@ fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importer
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 
                         if(file.isEnabled()){
-                            println("file enabled")
                             Checkbox(
                                 checked = file.isChecked,
                                 onCheckedChange = {importerViewModel.onFeatureFileCheckedChange(file,it)},

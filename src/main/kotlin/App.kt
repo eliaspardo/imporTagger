@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.*
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -15,7 +18,13 @@ import androidx.compose.ui.window.application
 import snackbar.LocalSnackbarController
 import snackbar.ProvideSnackbarController
 import snackbar.SnackbarMessageHandler
+import ui.PropertiesDialog
+import ui.PropertiesDialogButton
+import ui.PropertiesDialogDialog
+import ui.PropertiesDialogUI
+import util.Config
 import util.KeyValueStorageImpl
+import java.io.File
 
 
 fun main() = application {
@@ -23,7 +32,9 @@ fun main() = application {
     val keyValueStorageImpl = KeyValueStorageImpl()
     val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
     val snackbarMessageHandler = SnackbarMessageHandler()
-    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+    val config = Config(Constants.PROPERTIES_FILE_PATH)
+    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler,config)
+    var firstTimeRunning = true
 
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -47,16 +58,15 @@ fun main() = application {
                         )
                     }
                     Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-                        FeatureFileChooserUI(
-                            importerViewModel.onFeatureFileChooserClick,
+                        FeatureFileChooserUIStateful(
                             importerViewModel.onFeatureFileChooserClose,
                             importerViewModel
                         )
-                        TestInfoFileChooserUI(
-                            importerViewModel.onTestInfoFileChooserClick,
+                        TestInfoFileChooserUIStateful(
                             importerViewModel.onTestInfoFileChooserClose,
                             importerViewModel
                         )
+                        PropertiesDialogUI(importerViewModel)
                     }
                     if (importerViewModel.testInfoFile.value != null) {
                         Row(Modifier.fillMaxWidth(), Arrangement.Center) {
@@ -72,13 +82,10 @@ fun main() = application {
                     }
                     FeatureFileListUI(importerViewModel.onRemoveFeatureFile, importerViewModel)
                 }
-                /*
-                // TODO For some reason this is triggering the notification twice
-                if(!importerViewModel.importResponseBody.errors.isEmpty()){
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar(importerViewModel.importResponseBody.errors.toString())
-                    }
-                }*/
+                if(firstTimeRunning){
+                    snackbarMessageHandler.showUserMessage("Customize your defaults in "+System.getProperty("compose.application.resources.dir")+File.separator+"default.properties")
+                    firstTimeRunning=false
+                }
             }
         }
     }
