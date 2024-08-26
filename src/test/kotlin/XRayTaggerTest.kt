@@ -18,8 +18,7 @@ internal class XRayTaggerTest{
     @BeforeTest
     fun setup(){
         System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+File.separator+"resources"+File.separator+"common")
-        val config = Config(Constants.PROPERTIES_FILE_PATH)
-        xRayTagger = XRayTagger(snackbarMessageHandler, config)
+        xRayTagger = XRayTagger(snackbarMessageHandler)
         fileManager = FileManager();
     }
 

@@ -54,7 +54,6 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         } catch(e: HttpRequestTimeoutException) {
             return Result.Error(NetworkError.REQUEST_TIMEOUT)
         }
-        return Result.Error(NetworkError.UNKNOWN)
     }
 
     // Import Feature File To XRay
@@ -116,8 +115,6 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         } catch(e: HttpRequestTimeoutException) {
             return Result.Error(NetworkError.REQUEST_TIMEOUT)
         }
-
-        Result.Error(NetworkError.UNKNOWN)
     }
 
     override suspend fun downloadCucumberTestsFromXRay(testID: String, importerViewModel: ImporterViewModel): Result<ExportResponse, NetworkError> {
@@ -154,6 +151,5 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         } catch(e: HttpRequestTimeoutException) {
             return Result.Error(NetworkError.REQUEST_TIMEOUT)
         }
-        return Result.Error(NetworkError.UNKNOWN)
     }
 }

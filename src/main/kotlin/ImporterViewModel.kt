@@ -12,7 +12,6 @@ class ImporterViewModel(
     private val iXRayRESTClient: IXRayRESTClient,
     private val keyValueStorage: KeyValueStorage,
     private val iUserMessageHandler: UserMessageHandler,
-    private val config: Config
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -234,7 +233,7 @@ class ImporterViewModel(
                 logger.info("Import and tagging OK. Starting Tagging.");
                 // On Success start tagging tests and preconditions
                 val fileManager = FileManager()
-                val xRayTagger = XRayTagger(iUserMessageHandler,config)
+                val xRayTagger = XRayTagger(iUserMessageHandler)
                 if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
                 if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
 

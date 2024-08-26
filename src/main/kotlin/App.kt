@@ -32,8 +32,7 @@ fun main() = application {
     val keyValueStorageImpl = KeyValueStorageImpl()
     val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
     val snackbarMessageHandler = SnackbarMessageHandler()
-    val config = Config(Constants.PROPERTIES_FILE_PATH)
-    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler,config)
+    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
     var firstTimeRunning = true
 
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {

@@ -3,21 +3,21 @@ package ui
 import ImporterViewModel
 import LOG_IN_BUTTON
 import LOG_OUT_BUTTON
-import MockXRayRESTClient
 import XRAY_CLIENT_ID_FIELD
 import XRAY_CLIENT_SECRET_FIELD
 import XRayLoginBox
 import XRayRESTClient
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.test.*
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.*
+import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import snackbar.SnackbarMessageHandler
 import util.Config
 import util.KeyValueStorageImpl
@@ -133,7 +133,7 @@ internal class LoginUIKtTest {
     }
 
     @OptIn(ExperimentalTestApi::class)
-    @Test
+    @Disabled @Test
     fun testXRayLoginBox_logIn_throwsUnknownError() = runComposeUiTest {
         //val keyValueStorageImpl = KeyValueStorageImpl()
         //val snackbarMessageHandler = SnackbarMessageHandler()

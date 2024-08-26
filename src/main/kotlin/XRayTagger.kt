@@ -1,13 +1,12 @@
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
-import util.Config
 import util.FileManager
 import util.onError
 import util.onSuccess
 import java.io.File
 
-class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Config) {
+class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     private val testTag = Constants.TEST_TAG
     private val preconditionTag = Constants.PRECONDITION_TAG
     private val preconditionPrefix = Constants.PRECONDITION_PREFIX
