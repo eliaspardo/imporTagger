@@ -39,9 +39,10 @@ jobs:
       - name: Package DMG
         run: ./gradlew packageDmg
 
-      - name: Publish deb artifact
+      - name: Publish dmg artifact
         if: success()
         uses: actions/upload-artifact@v2
         with:
-          path: ${{ github.workspace }}/build/compose/binaries/main/dmg/xray-importer_1.0.0.dmg
-          name: xray-importer_1.0.0.dmg
+          path: ${{ github.workspace }}/build/compose/binaries/main/dmg/XRay Importer-1.0.0.dmg
+          name: XRay Importer-1.0.0.dmg
+          #/Users/runner/work/xray-importer/xray-importer/build/compose/binaries/main/dmg/XRay Importer-1.0.0.dmg
