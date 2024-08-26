@@ -7,7 +7,12 @@ import XRAY_CLIENT_ID_FIELD
 import XRAY_CLIENT_SECRET_FIELD
 import XRayLoginBox
 import XRayRESTClient
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
+import androidx.compose.ui.text.TextLayoutResult
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -37,11 +42,10 @@ internal class LoginUIKtTest {
     @BeforeTest
     fun setup(){
         System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+ File.separator+"resources"+ File.separator+"common")
-        val config = Config(Constants.PROPERTIES_FILE_PATH)
         val keyValueStorageImpl = KeyValueStorageImpl()
         val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
         val snackbarMessageHandler = SnackbarMessageHandler()
-        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler,config)
+        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
         importerViewModelMock = mockk<ImporterViewModel>()
     }
 
@@ -133,7 +137,7 @@ internal class LoginUIKtTest {
     }
 
     @OptIn(ExperimentalTestApi::class)
-    @Disabled @Test
+    /*@Disabled*/ @Test
     fun testXRayLoginBox_logIn_throwsUnknownError() = runComposeUiTest {
         //val keyValueStorageImpl = KeyValueStorageImpl()
         //val snackbarMessageHandler = SnackbarMessageHandler()
@@ -148,8 +152,26 @@ internal class LoginUIKtTest {
         onNodeWithTag(LOG_IN_BUTTON).performClick()
         runBlocking {
             //awaitIdle()
-            delay(10000)
-            onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextEquals("XRay Client Secret", "")
+            delay(1000)
+            onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextColor(Color.Red)
+            //onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput("t")
+            //onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextEquals("XRay Client Secret", "t")
+        }
+    }
+    fun SemanticsNodeInteraction.assertTextColor(
+        color: Color
+    ): SemanticsNodeInteraction = assert(isOfColor(color))
+    private fun isOfColor(color: Color): SemanticsMatcher = SemanticsMatcher(
+        "${SemanticsProperties.Text.name} is of color '$color'"
+    ) {
+        val textLayoutResults = mutableListOf<TextLayoutResult>()
+        it.config.getOrNull(SemanticsActions.GetTextLayoutResult)
+            ?.action
+            ?.invoke(textLayoutResults)
+        return@SemanticsMatcher if (textLayoutResults.isEmpty()) {
+            false
+        } else {
+            textLayoutResults.first().layoutInput.style.color == color
         }
     }
 
