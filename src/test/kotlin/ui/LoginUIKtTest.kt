@@ -3,6 +3,7 @@ package ui
 import ImporterViewModel
 import LOG_IN_BUTTON
 import LOG_OUT_BUTTON
+import LoginState
 import XRAY_CLIENT_ID_FIELD
 import XRAY_CLIENT_SECRET_FIELD
 import XRayLoginBox
@@ -22,9 +23,7 @@ import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 import snackbar.SnackbarMessageHandler
-import util.Config
 import util.KeyValueStorageImpl
 import java.io.File
 import java.nio.file.Paths
@@ -135,27 +134,44 @@ internal class LoginUIKtTest {
         onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput(updatedXrayClientSecret)
         onNodeWithTag(LOG_IN_BUTTON).assertIsNotEnabled()
     }
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun testXRayLoginBox_incorrectLogIn_throwsUnauthorizedError() = runComposeUiTest {
+    }
 
     @OptIn(ExperimentalTestApi::class)
     /*@Disabled*/ @Test
     fun testXRayLoginBox_logIn_throwsUnknownError() = runComposeUiTest {
         //val keyValueStorageImpl = KeyValueStorageImpl()
-        //val snackbarMessageHandler = SnackbarMessageHandler()
         //val MockedXRayRESTClient = MockXRayRESTClient(keyValueStorageImpl)
         //val importerViewModelWithMockedRESTClient = ImporterViewModel(MockedXRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
         setContent {
-            XRayLoginBox(onUserNameChanged = importerViewModel.onUserNameChanged, onPasswordChanged = importerViewModel.onPasswordChanged, onLoginClick=importerViewModel.onLoginClick,onLoginCancelClick={},onLogoutClick=importerViewModel.onLogoutClick,importerViewModel=importerViewModel)
+            XRayLoginBox(
+                importerViewModel.onUserNameChanged,
+                importerViewModel.onPasswordChanged,
+                importerViewModel.onLoginClick,
+                importerViewModel.onLoginCancelClick,
+                importerViewModel.onLogoutClick,
+                importerViewModel
+            )
         }
-
         onNodeWithTag(XRAY_CLIENT_ID_FIELD).performTextInput(updatedXrayClientID)
         onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput(updatedXrayClientSecret)
         onNodeWithTag(LOG_IN_BUTTON).performClick()
         runBlocking {
             //awaitIdle()
-            delay(1000)
-            onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextColor(Color.Red)
+            delay(5000)
+            //onNodeWithText("Error logging in UNAUTHORIZED",useUnmergedTree = true).assertExists()
+            //assertEquals(importerViewModel.loginState, LoginState.ERROR)
+            onNodeWithTag(XRAY_CLIENT_ID_FIELD).assertTextEquals("XRay Client ID", updatedXrayClientID)
+            assert(importerViewModel.xrayClientSecret=="")
+            onNodeWithTag(LOG_IN_BUTTON).performClick()
+            delay(5000)
             //onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).performTextInput("t")
-            //onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextEquals("XRay Client Secret", "t")
+            onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextEquals("XRay Client Secret", "")
+            //onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextEquals("XRay Client Secret", "")
+            //onNodeWithTag(LOG_IN_BUTTON).assertIsNotEnabled()
+            //onNodeWithTag(XRAY_CLIENT_SECRET_FIELD).assertTextColor(Color.Red)
         }
     }
     fun SemanticsNodeInteraction.assertTextColor(

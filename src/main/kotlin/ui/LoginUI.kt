@@ -50,6 +50,7 @@ fun LoginBox(
                 label = { Text("XRay Client ID") },
                 modifier = Modifier.padding(5.dp).testTag(XRAY_CLIENT_ID_FIELD)
                 .onKeyEvent {
+                    // Handling of tab navigation
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
                         // TODO Tab goes to next field, but writes tab, removing it here, not very elegant
@@ -67,6 +68,7 @@ fun LoginBox(
                 label = { Text("XRay Client Secret") },
                 modifier = Modifier.padding(5.dp).testTag(XRAY_CLIENT_SECRET_FIELD)
                 .onKeyEvent {
+                    // Handling of tab navigation
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
                         onPasswordChanged(importerViewModel.xrayClientSecret.substring(0, maxOf(importerViewModel.xrayClientSecret.length - 1,0)))

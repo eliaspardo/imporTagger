@@ -28,8 +28,6 @@ class ImporterViewModel(
         private set
     var percentageProcessed by mutableStateOf(0f)
         private set
-    var isLoggingIn by mutableStateOf(false)
-        private set
     var appState by mutableStateOf(AppState.DEFAULT)
         private set
     var loginState by mutableStateOf(LoginState.DEFAULT)
@@ -182,17 +180,14 @@ class ImporterViewModel(
     suspend fun logIn() {
         logger.debug("Logging in")
         appState=AppState.LOGGING_IN
-        isLoggingIn=true
         delay(1000L)
         iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
-            isLoggingIn=false
             appState = AppState.DEFAULT
             loginState = LoginState.LOGGED_IN
             xrayClientSecret=""
             iUserMessageHandler.showUserMessage("Successfully logged in")
             logger.debug("Successfully logged in")
         }.onError {
-            isLoggingIn=false
             appState = AppState.DEFAULT
             loginState = LoginState.ERROR
             xrayClientSecret=""
@@ -207,9 +202,7 @@ class ImporterViewModel(
     fun logOut() {
         logger.debug("Logging out")
         appState=AppState.LOGGING_OUT
-        isLoggingIn=true
         keyValueStorage.cleanStorage()
-        isLoggingIn=false
         featureFileList.clear()
         testInfoFile.value= null
         appState = AppState.DEFAULT
