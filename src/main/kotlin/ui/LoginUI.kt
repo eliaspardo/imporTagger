@@ -1,4 +1,3 @@
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -17,14 +16,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import snackbar.SnackbarMessageHandler
-import util.KeyValueStorageImpl
 
 
 const val XRAY_CLIENT_ID_FIELD = "xRayClientIDField"
 const val XRAY_CLIENT_SECRET_FIELD = "xRayClientSecretField"
 const val LOG_OUT_BUTTON = "logOutButton"
 const val LOG_IN_BUTTON = "logInButton"
+const val LOG_IN_CANCEL_BUTTON = "cancelLoginButton"
+const val LOG_IN_CIRCULAR_PROGRESS_INDICATOR = "loginCircularProgressIndicator"
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -102,8 +101,8 @@ fun LoginBox(
                 Text("Log In")
             }
         } else {
-            CircularProgressIndicator()
-            Button(onClick = onLoginCancelClick, enabled = true){
+            CircularProgressIndicator(modifier = Modifier.testTag(LOG_IN_CIRCULAR_PROGRESS_INDICATOR))
+            Button(onClick = onLoginCancelClick, enabled = true, modifier = Modifier.testTag(LOG_IN_CANCEL_BUTTON)){
                 Text("Cancel")
             }
         }
