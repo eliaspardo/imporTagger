@@ -24,6 +24,8 @@ val multiplatformSettings = "0.7.7"
 val mockkVersion = "1.10.0"
 
 dependencies {
+    implementation("org.testng:testng:7.1.0")
+    implementation("org.testng:testng:7.1.0")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     //implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:2.0.0")

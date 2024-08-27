@@ -11,11 +11,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogState
 import util.FileManager
 
+const val PROPERTIES_DIALOG_BUTTON = "properties_dialog_button"
+const val PROPERTIES_FILE_LOCATION_FIELD = "properties_file_location"
 class PropertiesDialog() {
     var dialogVisible by mutableStateOf(false)
     var title by mutableStateOf("Current default.properties")
@@ -36,7 +39,7 @@ fun PropertiesDialogDialog(propertiesDialog: PropertiesDialog, importerViewModel
     if(propertiesDialog.dialogVisible)importerViewModel.dialogOpened()
     Dialog(visible = propertiesDialog.dialogVisible, state = DialogState(width=700.dp),onCloseRequest = {propertiesDialog.dialogVisible=false;importerViewModel.dialogClosed()}, title = propertiesDialog.title, resizable = true ) {
         Column(Modifier.fillMaxWidth()) {
-            Text("File Location: "+propertiesDialog.propertiesFileLocation)
+            Text("File Location: "+propertiesDialog.propertiesFileLocation, modifier = Modifier.testTag(PROPERTIES_FILE_LOCATION_FIELD))
             for (line in propertiesDialog.propertiesFileLines){
                 Text(line)
             }
@@ -46,7 +49,7 @@ fun PropertiesDialogDialog(propertiesDialog: PropertiesDialog, importerViewModel
 
 @Composable
 fun PropertiesDialogButton(propertiesDialog: PropertiesDialog,importerViewModel: ImporterViewModel){
-    Button(onClick = {propertiesDialog.dialogVisible=true},enabled = importerViewModel.isPropertiesDialogButtonEnabled(), modifier = Modifier.padding(5.dp)){
+    Button(onClick = {propertiesDialog.dialogVisible=true},enabled = importerViewModel.isPropertiesDialogButtonEnabled(), modifier = Modifier.padding(5.dp).testTag(PROPERTIES_DIALOG_BUTTON)){
         Text("See default.properties")
     }
 }
