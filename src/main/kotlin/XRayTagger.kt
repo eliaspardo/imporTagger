@@ -185,12 +185,18 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
 
                         // Get Scenario from extracted file
                         val unzippedFileLines = fileManager.readFile(unzippedTestFile)
-                        val scenario = getScenario(unzippedFileLines)
-                        fileManager.deleteFile(File(unzippedTestFile))
-
-                        // Find Scenario in featureFile and tag it
-                        val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
-                        fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                        try {
+                            val scenario = getScenario(unzippedFileLines)
+                            // Find Scenario in featureFile and tag it
+                            val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
+                            fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                        }catch(nsfe: NoScenarioFoundException){
+                            logger.error("No scenario found in unzipped file: "+unzippedTestFile);
+                            iUserMessageHandler.showUserMessage("No scenario found in unzipped file: "+unzippedTestFile)
+                        }finally{
+                            // Always delete file
+                            fileManager.deleteFile(File(unzippedTestFile))
+                        }
                     }.onError {
                         logger.error("Error tagging tests in "+featureFilePath);
                         iUserMessageHandler.showUserMessage("Error tagging tests in "+featureFilePath)
@@ -212,9 +218,14 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
             val preconditionID = precondition.key
             if(!isFileTagged(featureFileLines,preconditionID)) {
                 logger.info("File is not tagged")
-                // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
-                val featureFileLinesTagged = tagPrecondition(preconditionID, featureFileLines)
-                fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                try{
+                    // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
+                    val featureFileLinesTagged = tagPrecondition(preconditionID, featureFileLines)
+                    fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                }catch(npfe: NoPreconditionFoundException){
+                    logger.error("Precondition not found in "+featureFilePath);
+                    iUserMessageHandler.showUserMessage("Precondition not found in "+featureFilePath)
+                }
             }else{
                 logger.info("file is tagged")
             }
