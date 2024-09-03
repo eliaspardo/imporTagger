@@ -70,6 +70,7 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
                                 append(HttpHeaders.ContentType, "application/octet-stream")
                                 append(HttpHeaders.ContentDisposition,"filename="+ File(featureFilePath))
                             })
+                            // TODO Check if files exists to prevent FileNotFoundException
                             append("testInfo", File(importerViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
                                 append(HttpHeaders.ContentType, "application/octet-stream")
                                 append(HttpHeaders.ContentDisposition,"filename="+importerViewModel.testInfoFile.value)

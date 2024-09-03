@@ -169,7 +169,14 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
         importerViewModel: ImporterViewModel
     ) {
         logger.info("Processing Tests for "+featureFilePath)
-        val featureFileLines = fileManager.readFile(featureFilePath)
+        var featureFileLines:MutableList<String>
+        try{
+            featureFileLines = fileManager.readFile(featureFilePath)
+        }catch(exception: Exception){
+            logger.error("Error reading file "+featureFilePath);
+            iUserMessageHandler.showUserMessage("Error reading file "+featureFilePath)
+            return
+        }
         for (test in updatedOrCreatedTests){
             val testID = test.key
             // Check if feature file is already tagged, if not, start tagging process
