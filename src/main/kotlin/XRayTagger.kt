@@ -1,3 +1,6 @@
+import exceptions.FeatureFileTaggingException
+import exceptions.NoPreconditionFoundException
+import exceptions.NoScenarioFoundException
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
@@ -49,7 +52,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
                 return lineNumber;
             }
         }
-        return 0;
+        throw NoScenarioFoundException("Scenario "+scenario+" not found in file!");
     }
 
     // Parse Feature File looking for Precondition. Get line number.
@@ -64,7 +67,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
                 return lineNumber;
             }
         }
-        return 0;
+        throw NoPreconditionFoundException("Precondition not found in file!");
     }
 
     // Check if previous line is tagged.
@@ -143,8 +146,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
                 return scenario;
             }
         }
-        // TODO This should return an exception
-        return scenario;
+        throw NoScenarioFoundException("No Scenario found in file!")
     }
 
     fun getPrecondition(unzippedFileLines: List<String>):String{
@@ -156,8 +158,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
                 return precondition;
             }
         }
-        // TODO This should return an exception
-        return precondition;
+        throw NoPreconditionFoundException("Precondition not found in file!");
     }
 
     suspend fun processUpdatedOrCreatedTests(
@@ -191,10 +192,9 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
                         val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
                         fileManager.writeFile(featureFilePath, featureFileLinesTagged)
                     }.onError {
-                        // TODO Return exception
                         logger.error("Error tagging tests in "+featureFilePath);
                         iUserMessageHandler.showUserMessage("Error tagging tests in "+featureFilePath)
-                        return
+                        throw FeatureFileTaggingException("Error tagging tests in "+featureFilePath)
                     }
             }
         }

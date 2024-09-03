@@ -1,8 +1,9 @@
+import exceptions.NoPreconditionFoundException
+import exceptions.NoScenarioFoundException
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import snackbar.SnackbarMessageHandler
-import util.Config
 import util.FileManager
 import java.io.File
 import java.nio.file.Paths
@@ -56,23 +57,31 @@ internal class XRayTaggerTest{
 
         @JvmStatic
         fun featureFilesScenarios() = listOf(
-            Arguments.of("src/test/resources/fileTEST-2806WithoutTag.feature", expectedTrimmedScenario, true),
-            Arguments.of("src/test/resources/fileTEST-2806WithOtherTag.feature", expectedTrimmedScenario, true),
-            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", expectedTrimmedScenario,true),
-            Arguments.of("src/test/resources/fileTEST-2806WithoutScenario.feature", expectedTrimmedScenario,false),
+            Arguments.of("src/test/resources/fileTEST-2806WithoutTag.feature", expectedTrimmedScenario),
+            Arguments.of("src/test/resources/fileTEST-2806WithOtherTag.feature", expectedTrimmedScenario),
+            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", expectedTrimmedScenario),
             // Testing file with Preconditions and Scenario Outline
-            Arguments.of("src/test/resources/TEST-3470_withPreconditions_untagged.feature", expectedTrimmedScenarioOutline,true)
+            Arguments.of("src/test/resources/TEST-3470_withPreconditions_untagged.feature", expectedTrimmedScenarioOutline)
+        )
+
+        @JvmStatic
+        fun featureFilesScenariosException() = listOf(
+            Arguments.of("src/test/resources/fileTEST-2806WithoutScenario.feature")
         )
 
         @JvmStatic
         fun featureFilesPreconditions() = listOf(
-            // Testing file without precondition
-            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature", "",true),
             // Testing file with Preconditions and Scenario Outline
             Arguments.of("src/test/resources/TEST-3470_withPreconditions_untagged.feature", expectedTrimmedPrecondition1,true),
             Arguments.of("src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature", expectedTrimmedPrecondition2,true),
             // Negative test, shouldn't match
-            Arguments.of("src/test/resources/TEST-3470_withPreconditions_untagged.feature", "Made up Precondition",false),
+            Arguments.of("src/test/resources/TEST-3470_withPreconditions_untagged.feature", "Made up Precondition",false)
+        )
+
+        @JvmStatic
+        fun featureFilesPreconditionsException() = listOf(
+            // Testing file without precondition
+            Arguments.of("src/test/resources/fileTEST-2806WithTag.feature")
         )
 
         @JvmStatic
@@ -80,16 +89,24 @@ internal class XRayTaggerTest{
             Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithoutTag.feature", 2),
             Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithOtherTag.feature", 3),
             Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithTag.feature", 3),
-            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithTag.feature", 3),
+            Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithTag.feature", 3)
+        )
+
+        @JvmStatic
+        fun featureFilesScenarioLineException() = listOf(
             Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithOtherScenario.feature", 0),
             Arguments.of(expectedScenario, "src/test/resources/fileTEST-2806WithoutScenario.feature", 0)
         )
         @JvmStatic
         fun featureFilesPreconditionsLine() = listOf(
             Arguments.of(expectedPrecondition1, "src/test/resources/TEST-3470_withPreconditions_untagged.feature", 4),
-            Arguments.of(expectedPrecondition2, "src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature", 4),
+            Arguments.of(expectedPrecondition2, "src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature", 4)
+        )
+
+        @JvmStatic
+        fun featureFilesPreconditionsLineException() = listOf(
             // File without preconditions
-            Arguments.of("There's no precondition on this file", "src/test/resources/fileTEST-2806WithOtherScenario.feature", 0),
+            Arguments.of("There's no precondition on this file", "src/test/resources/fileTEST-2806WithOtherScenario.feature"),
         )
 
 
@@ -134,10 +151,22 @@ internal class XRayTaggerTest{
 
     @ParameterizedTest
     @MethodSource("featureFilesScenarios")
-    fun testGetScenario(featureFile: String, expectedTrimmedScenario:String,expected: Boolean){
+    fun testGetScenario(featureFile: String, expectedTrimmedScenario:String){
         val featureFileLines = fileManager.readFile(featureFile)
         var actualTrimmedScenario = xRayTagger.getScenario(featureFileLines).replace(" ","").replace("\t", "");
-        assertEquals(expected,expectedTrimmedScenario==actualTrimmedScenario)
+        assertEquals(expectedTrimmedScenario, actualTrimmedScenario)
+    }
+
+    @ParameterizedTest
+    @MethodSource("featureFilesScenariosException")
+    fun testGetScenarioException(featureFile: String){
+        val featureFileLines = fileManager.readFile(featureFile)
+        assertFailsWith<NoScenarioFoundException>(
+            message = "No exception found",
+            block = {
+                xRayTagger.getScenario(featureFileLines).replace(" ","").replace("\t", "");
+            }
+        )
     }
 
     @ParameterizedTest
@@ -149,6 +178,18 @@ internal class XRayTaggerTest{
     }
 
     @ParameterizedTest
+    @MethodSource("featureFilesPreconditionsException")
+    fun testGetPreconditionException(featureFile: String){
+        val featureFileLines = fileManager.readFile(featureFile)
+        assertFailsWith<NoPreconditionFoundException>(
+            message = "No exception found",
+            block = {
+                xRayTagger.getPrecondition(featureFileLines).replace(" ","").replace("\t", "");
+            }
+        )
+    }
+
+    @ParameterizedTest
     @MethodSource("featureFilesScenarioLine")
     fun testFindLineWhereScenario(expectedScenario:String, featureFile: String, expectedLine:Int){
         val featureFileLines = fileManager.readFile(featureFile)
@@ -156,10 +197,34 @@ internal class XRayTaggerTest{
     }
 
     @ParameterizedTest
+    @MethodSource("featureFilesScenarioLineException")
+    fun testFindLineWhereScenarioException(expectedScenario:String, featureFile: String){
+        val featureFileLines = fileManager.readFile(featureFile)
+        assertFailsWith<NoScenarioFoundException>(
+            message = "No exception found",
+            block = {
+                xRayTagger.findLineWhereScenario(expectedScenario,featureFileLines);
+            }
+        )
+    }
+
+    @ParameterizedTest
     @MethodSource("featureFilesPreconditionsLine")
     fun testFindLineWherePrecondition(expectedPrecondition:String, featureFile: String, expectedLine:Int){
         val featureFileLines = fileManager.readFile(featureFile)
         assertEquals(expectedLine, xRayTagger.findLineWhereScenario(expectedPrecondition,featureFileLines));
+    }
+
+    @ParameterizedTest
+    @MethodSource("featureFilesPreconditionsLineException")
+    fun testFindLineWherePreconditionException(expectedPrecondition:String, featureFile: String){
+        val featureFileLines = fileManager.readFile(featureFile)
+        assertFailsWith<NoScenarioFoundException>(
+            message = "No exception found",
+            block = {
+                xRayTagger.findLineWhereScenario(expectedPrecondition,featureFileLines);
+            }
+        )
     }
 
     @ParameterizedTest

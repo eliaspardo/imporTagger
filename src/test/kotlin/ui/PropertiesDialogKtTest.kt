@@ -41,10 +41,10 @@ internal class PropertiesDialogKtTest{
     fun testSomething()= runComposeUiTest {
         setContent{
             PropertiesDialogUI(importerViewModel)
-            onNodeWithTag(PROPERTIES_DIALOG_BUTTON).assertExists()
-            onNodeWithTag(PROPERTIES_FILE_LOCATION_FIELD).assertDoesNotExist()
-            onNodeWithTag(PROPERTIES_DIALOG_BUTTON).performClick()
-            onNodeWithTag(PROPERTIES_FILE_LOCATION_FIELD).assertExists()
         }
+        onNodeWithTag(PROPERTIES_DIALOG_BUTTON).assertExists()
+        onNodeWithTag(PROPERTIES_FILE_LOCATION_FIELD).assertDoesNotExist()
+        onNodeWithTag(PROPERTIES_DIALOG_BUTTON).performClick()
+        onNodeWithTag(PROPERTIES_FILE_LOCATION_FIELD).assertExists()
     }
 }
