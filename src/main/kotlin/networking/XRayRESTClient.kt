@@ -59,6 +59,20 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
     // Import Feature File To XRay
     override suspend fun importFileToXray(featureFilePath: String, importerViewModel: ImporterViewModel): Result<ImportResponse, NetworkError> {
         logger.info("Importing file to XRay")
+
+        val featureFileByteArray:ByteArray
+        val testInfoFileByteArray:ByteArray
+        try {
+            featureFileByteArray = File(featureFilePath).readBytes()
+        }catch(exception:Exception){
+            return Result.Error(NetworkError.ERROR_READING_FEATURE_FILE)
+        }
+        try {
+            testInfoFileByteArray = File(importerViewModel.testInfoFile.value?.absolutePath).readBytes()
+        }catch(exception:Exception){
+            return Result.Error(NetworkError.ERROR_READING_TEST_INFO_FILE)
+        }
+
         val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
         }?: run {return Result.Error(NetworkError.NO_TOKEN)}
         try{
@@ -66,12 +80,11 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
                 setBody(
                     MultiPartFormDataContent(
                         formData {
-                            append("file", File(featureFilePath).readBytes(), Headers.build {
+                            append("file", featureFileByteArray, Headers.build {
                                 append(HttpHeaders.ContentType, "application/octet-stream")
                                 append(HttpHeaders.ContentDisposition,"filename="+ File(featureFilePath))
                             })
-                            // TODO Check if files exists to prevent FileNotFoundException
-                            append("testInfo", File(importerViewModel.testInfoFile.value?.absolutePath).readBytes(), Headers.build {
+                            append("testInfo", testInfoFileByteArray, Headers.build {
                                 append(HttpHeaders.ContentType, "application/octet-stream")
                                 append(HttpHeaders.ContentDisposition,"filename="+importerViewModel.testInfoFile.value)
                             })
@@ -86,8 +99,12 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
             // TODO Review this, probably shouldn't go here. Not needed?
             importerViewModel.importResponseCode = response.status.value
             importerViewModel.importResponseMessage = response.status.description
-            importerViewModel.importResponseBody = response.body()
-
+            try{
+                importerViewModel.importResponseBody = response.body()
+            }catch(se: SerializationException){
+                logger.error("Error serializing response: "+response.bodyAsText())
+                Result.Error(NetworkError.SERIALIZATION)
+            }
             client.close()
             return when (importerViewModel.importResponseCode){
                 in 200..299 -> {
@@ -100,6 +117,7 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
                     }
                     Result.Success(importerViewModel.importResponseBody)
                 }
+                400 -> Result.Error(NetworkError.BAD_REQUEST)
                 401 -> Result.Error(NetworkError.UNAUTHORIZED)
                 404 -> Result.Error(NetworkError.NOT_FOUND)
                 409 -> Result.Error(NetworkError.CONFLICT)
@@ -110,10 +128,13 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
             }
         // TODO Handle errors here - e.g. timeouts (mock with "http://www.google.com:81/")
         }catch(e: UnresolvedAddressException) {
+            logger.error(importerViewModel.importResponseBody.toString())
             return Result.Error(NetworkError.NO_INTERNET)
         } catch(e: SerializationException) {
+            logger.error(importerViewModel.importResponseBody.toString())
             return Result.Error(NetworkError.SERIALIZATION)
         } catch(e: HttpRequestTimeoutException) {
+            logger.error(importerViewModel.importResponseBody.toString())
             return Result.Error(NetworkError.REQUEST_TIMEOUT)
         }
     }
