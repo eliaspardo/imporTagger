@@ -135,6 +135,7 @@ internal class XRayTaggerTest{
             Arguments.of("TEST-4705","src/test/resources/TEST-4701_withPreconditionsAndOtherTests_untagged.feature")
         )
     }
+
     @ParameterizedTest
     @MethodSource("featureFilesTags")
     fun testIsFileTagged(featureFile: String, testID:String, isTagged: Boolean){
