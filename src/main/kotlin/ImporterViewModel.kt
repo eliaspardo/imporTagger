@@ -33,13 +33,6 @@ class ImporterViewModel(
     var loginState by mutableStateOf(LoginState.DEFAULT)
         private set
 
-    var loginResponseCode by mutableStateOf(404)
-    var loginResponseMessage by mutableStateOf("")
-
-    var importResponseCode by mutableStateOf(404)
-    var importResponseMessage by mutableStateOf("")
-    var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
-
     /*
      * Lambda callback functions for the UI
      */
@@ -227,11 +220,11 @@ class ImporterViewModel(
                 // On Success start tagging tests and preconditions
                 val fileManager = FileManager()
                 val xRayTagger = XRayTagger(iUserMessageHandler)
-                if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
-                if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
+                if(!it.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, it.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
+                if(!it.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, it.updatedOrCreatedPreconditions, fileManager)
 
                 file.isImported = true
-                iUserMessageHandler.showUserMessage("Imported file successfully")
+                iUserMessageHandler.showUserMessage("Imported file successfully: "+file.name)
             }.onError {
                 logger.error("Error importing file: "+it);
                 iUserMessageHandler.showUserMessage("Error importing file: "+it)

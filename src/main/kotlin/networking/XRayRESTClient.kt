@@ -28,9 +28,6 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
                             "}"
                 )
             }
-            // TODO Review this, probably shouldn't go here. Not needed?
-            importerViewModel.loginResponseCode = response.status.value
-            importerViewModel.loginResponseMessage = response.status.description
 
             client.close()
             return when (response.status.value){
@@ -62,6 +59,9 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
 
         val featureFileByteArray:ByteArray
         val testInfoFileByteArray:ByteArray
+        val importResponseCode:Int
+        var importResponseBody = ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList())
+
         try {
             featureFileByteArray = File(featureFilePath).readBytes()
         }catch(exception:Exception){
@@ -96,26 +96,27 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
                     logger.debug("Sent $bytesSentTotal bytes from $contentLength")
                 }
             }
-            // TODO Review this, probably shouldn't go here. Not needed?
-            importerViewModel.importResponseCode = response.status.value
-            importerViewModel.importResponseMessage = response.status.description
+
+            importResponseCode = response.status.value
+
             try{
-                importerViewModel.importResponseBody = response.body()
+                importResponseBody = response.body()
             }catch(se: SerializationException){
                 logger.error("Error serializing response: "+response.bodyAsText())
                 Result.Error(NetworkError.SERIALIZATION)
             }
             client.close()
-            return when (importerViewModel.importResponseCode){
+
+            return when (importResponseCode){
                 in 200..299 -> {
-                    if(!importerViewModel.importResponseBody.errors.isEmpty()){
+                    if(!importResponseBody.errors.isEmpty()){
                         logger.warn("There are errors")
-                        logger.warn(importerViewModel.importResponseBody.errors.toString())
+                        logger.warn(importResponseBody.errors.toString())
                         Result.Error(XRayError.UNKNOWN)
                     }else{
                         logger.debug("There are no errors importing to XRay")
                     }
-                    Result.Success(importerViewModel.importResponseBody)
+                    Result.Success(importResponseBody)
                 }
                 400 -> Result.Error(NetworkError.BAD_REQUEST)
                 401 -> Result.Error(NetworkError.UNAUTHORIZED)
@@ -128,13 +129,13 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
             }
         // TODO Handle errors here - e.g. timeouts (mock with "http://www.google.com:81/")
         }catch(e: UnresolvedAddressException) {
-            logger.error(importerViewModel.importResponseBody.toString())
+            logger.error(importResponseBody.toString())
             return Result.Error(NetworkError.NO_INTERNET)
         } catch(e: SerializationException) {
-            logger.error(importerViewModel.importResponseBody.toString())
+            logger.error(importResponseBody.toString())
             return Result.Error(NetworkError.SERIALIZATION)
         } catch(e: HttpRequestTimeoutException) {
-            logger.error(importerViewModel.importResponseBody.toString())
+            logger.error(importResponseBody.toString())
             return Result.Error(NetworkError.REQUEST_TIMEOUT)
         }
     }
