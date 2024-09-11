@@ -1,6 +1,7 @@
 import exceptions.FeatureFileTaggingException
 import exceptions.NoPreconditionFoundException
 import exceptions.NoScenarioFoundException
+import io.ktor.client.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler

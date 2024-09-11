@@ -5,6 +5,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
+import networking.createHttpClient
 import networking.createKtorHTTPClient
 import snackbar.UserMessageHandler
 import util.*
@@ -175,8 +176,9 @@ class ImporterViewModel(
         logger.debug("Logging in")
         appState=AppState.LOGGING_IN
         delay(1000L)
-        val httpClient = createKtorHTTPClient();
-        iXRayRESTClient.logInOnXRay(httpClient,xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
+        //val httpClient = createHttpClient(keyValueStorage);
+        //val httpClient = createKtorHTTPClient();
+        iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
             appState = AppState.DEFAULT
             loginState = LoginState.LOGGED_IN
             xrayClientSecret=""
@@ -214,8 +216,8 @@ class ImporterViewModel(
         logger.debug("Importing test cases")
         appState=AppState.IMPORTING
         percentageProcessed = 0f
+        //val client = createHttpClient(keyValueStorage)
         featureFileList.map{ file-> if(file.isChecked){
-
             logger.info("Importing file: "+file.path);
             iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
                 logger.info("Import and tagging OK. Starting Tagging.");

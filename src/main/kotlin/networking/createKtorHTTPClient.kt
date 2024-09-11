@@ -68,6 +68,6 @@ fun createKtorHTTPClient(): HttpClient {
 }
 
 fun createHttpClient(keyValueStorage: KeyValueStorage): HttpClient{
-    keyValueStorage.token?.let { return createKtorHTTPClient(it)
-    }?: run {return createKtorHTTPClient()}
+    keyValueStorage.token?.let { println("We have a token"); return createKtorHTTPClient(it)
+    }?: run {println("We dont have a token"); return createKtorHTTPClient()}
 }
