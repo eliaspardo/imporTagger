@@ -1,7 +1,14 @@
 package networking
 
 import ImporterViewModel
+import LoginResponse
 import XRayRESTClient
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,6 +27,7 @@ internal class XRayRESTClientTest {
     lateinit var importerViewModel:ImporterViewModel
     val keyValueStorageImpl = KeyValueStorageImpl()
     val snackbarMessageHandler = SnackbarMessageHandler()
+    val httpClient = createKtorHTTPClient();
     val dummyToken = "eyJhbGciOiJIUzI1IsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnQiOiI1ZTg0MWY1Ny1mNTBkLTM3YzQtYjVkOC0wMTg5YmE5OTU2MzIiLCJhY2NvdW50SWQiOiI2Mjk1ZWM5YTliYzcxNTAwNjhjZDc5ZWUiLCJpc1hlYSI6ZmFsc2UsImlhdCI6MTcyNTYzNzM2NywiZXhwIjoxNzI1NzIzNzY3LCJhdWQiOiJDNDE5NDc4QTc0MEY0NjYyQjA4ODRGRjAyQUZEREE4MiIsImlzcyI6ImNvbS54cGFuZGl0LnBsdWdpbnMueHJheSIsInN1YiI6IkM0MTk0NzhBNzQwRjQ2NjJCMDg4NEZGMDJBRkREQTgyIn0.ilD_KAqCZq-nwDqoeM0dzMzxoAMv-kMEiAcEEuGVUXY".replace("\"", "")
 
     @BeforeTest
@@ -36,7 +44,7 @@ internal class XRayRESTClientTest {
 
     @Test
     fun logInOnXRay_wrongCredentials() = runTest{
-        val result = xRayRESTClient.logInOnXRay("test", "test", importerViewModel)
+        val result = xRayRESTClient.logInOnXRay(httpClient,"test", "test", importerViewModel)
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
     }
 
@@ -82,5 +90,21 @@ internal class XRayRESTClientTest {
         keyValueStorageImpl.token = dummyToken
         val result = xRayRESTClient.downloadCucumberTestsFromXRay("testID",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
+    }
+
+    @Test
+    fun testNewKtorClient() = runTest{
+        val mockEngine = MockEngine { request ->
+            respond(
+                content = ByteReadChannel("dummyToken"),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+        val mockedHttpClient = HttpClient(mockEngine){}
+        val result = xRayRESTClient.logInOnXRay(mockedHttpClient,"test", "test", importerViewModel)
+        assertEquals(result, Result.Success(LoginResponse("dummyToken")))
+        assertEquals(keyValueStorageImpl.token,"dummyToken")
+
     }
 }

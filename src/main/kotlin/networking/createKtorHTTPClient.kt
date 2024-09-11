@@ -10,6 +10,9 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import util.KeyValueStorage
+import util.NetworkError
+import util.Result
 
 
 /*
@@ -62,4 +65,9 @@ fun createKtorHTTPClient(): HttpClient {
             requestTimeoutMillis = timeout
         }
     }
+}
+
+fun createHttpClient(keyValueStorage: KeyValueStorage): HttpClient{
+    keyValueStorage.token?.let { return createKtorHTTPClient(it)
+    }?: run {return createKtorHTTPClient()}
 }

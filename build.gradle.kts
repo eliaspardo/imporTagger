@@ -33,6 +33,7 @@ dependencies {
     //testImplementation(compose.uiTest)
     testImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.2.1")
     testImplementation("io.mockk:mockk:${mockkVersion}")
+    testImplementation("io.ktor:ktor-client-mock:$ktor_version")
     // Get rid of
     // WARNING: Failed to transform class ImporterViewModel
     //java.lang.IllegalArgumentException: Unsupported class file major version 60
