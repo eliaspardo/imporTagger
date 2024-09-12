@@ -5,10 +5,11 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
-import networking.createHttpClient
-import networking.createKtorHTTPClient
 import snackbar.UserMessageHandler
-import util.*
+import util.FileManager
+import util.KeyValueStorage
+import util.onError
+import util.onSuccess
 
 class ImporterViewModel(
     private val iXRayRESTClient: IXRayRESTClient,
@@ -178,7 +179,7 @@ class ImporterViewModel(
         delay(1000L)
         //val httpClient = createHttpClient(keyValueStorage);
         //val httpClient = createKtorHTTPClient();
-        iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
+        iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret).onSuccess {
             appState = AppState.DEFAULT
             loginState = LoginState.LOGGED_IN
             xrayClientSecret=""

@@ -45,7 +45,7 @@ internal class XRayRESTClientTest {
 
     @Test
     fun logInOnXRay_wrongCredentials() = runTest{
-        val result = xRayRESTClient.logInOnXRay("test", "test", importerViewModel)
+        val result = xRayRESTClient.logInOnXRay("test", "test")
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
     }
 

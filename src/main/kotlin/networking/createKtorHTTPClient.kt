@@ -7,6 +7,9 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
@@ -64,6 +67,22 @@ fun createKtorHTTPClient(): HttpClient {
         install(HttpTimeout) {
             requestTimeoutMillis = timeout
         }
+        /*install(Auth){
+            bearer{
+                refreshTokens {
+                    client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
+                        contentType(ContentType.Application.Json)
+                        setBody(
+                            "{\n" +
+                                    "    \"client_id\": \"" + xrayClientID + "\",\n" +
+                                    "    \"client_secret\": \"" + xrayClientSecret + "\"\n" +
+                                    "}"
+                        )
+                    }
+                    BearerTokens(response.bodyAsText().replace("\"", ""),"")
+                }
+            }
+        }*/
     }
 }
 

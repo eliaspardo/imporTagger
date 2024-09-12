@@ -1,6 +1,8 @@
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
@@ -16,7 +18,7 @@ import java.io.File
 class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTClient{
     private val projectKey = Constants.PROJECT_KEY
     private val logger = KotlinLogging.logger {}
-    override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String, importerViewModel: ImporterViewModel): Result<LoginResponse, NetworkError> {
+    override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): Result<LoginResponse, NetworkError> {
         logger.info("Logging into XRay")
         val client = createKtorHTTPClient();
         try {
@@ -74,8 +76,18 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
             return Result.Error(NetworkError.ERROR_READING_TEST_INFO_FILE)
         }
 
+
         val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
         }?: run {return Result.Error(NetworkError.NO_TOKEN)}
+
+        // TODO Review this
+        /*
+        keyValueStorage.token?.let {
+            client.plugin(Auth).bearer { loadTokens { BearerTokens(it, "") } }
+        }?: run {
+            return Result.Error(NetworkError.NO_TOKEN)
+        }*/
+
         try{
             val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey="+projectKey) {
                 setBody(
