@@ -67,26 +67,5 @@ fun createKtorHTTPClient(): HttpClient {
         install(HttpTimeout) {
             requestTimeoutMillis = timeout
         }
-        /*install(Auth){
-            bearer{
-                refreshTokens {
-                    client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            "{\n" +
-                                    "    \"client_id\": \"" + xrayClientID + "\",\n" +
-                                    "    \"client_secret\": \"" + xrayClientSecret + "\"\n" +
-                                    "}"
-                        )
-                    }
-                    BearerTokens(response.bodyAsText().replace("\"", ""),"")
-                }
-            }
-        }*/
     }
-}
-
-fun createHttpClient(keyValueStorage: KeyValueStorage): HttpClient{
-    keyValueStorage.token?.let { println("We have a token"); return createKtorHTTPClient(it)
-    }?: run {println("We dont have a token"); return createKtorHTTPClient()}
 }

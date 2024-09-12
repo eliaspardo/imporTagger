@@ -20,7 +20,7 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
     private val logger = KotlinLogging.logger {}
     override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): Result<LoginResponse, NetworkError> {
         logger.info("Logging into XRay")
-        val client = createKtorHTTPClient();
+        val client = createKtorHTTPClient()
         try {
             val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
                 contentType(ContentType.Application.Json)
@@ -65,6 +65,10 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         val importResponseCode:Int
         var importResponseBody = ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList())
 
+        // TODO Fix this
+        val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
+        }?: run {return Result.Error(NetworkError.NO_TOKEN)}
+
         try {
             featureFileByteArray = File(featureFilePath).readBytes()
         }catch(exception:Exception){
@@ -75,18 +79,6 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         }catch(exception:Exception){
             return Result.Error(NetworkError.ERROR_READING_TEST_INFO_FILE)
         }
-
-
-        val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
-        }?: run {return Result.Error(NetworkError.NO_TOKEN)}
-
-        // TODO Review this
-        /*
-        keyValueStorage.token?.let {
-            client.plugin(Auth).bearer { loadTokens { BearerTokens(it, "") } }
-        }?: run {
-            return Result.Error(NetworkError.NO_TOKEN)
-        }*/
 
         try{
             val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey="+projectKey) {

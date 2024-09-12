@@ -2,14 +2,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import exceptions.NoTokenException
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
+import networking.createKtorHTTPClient
 import snackbar.UserMessageHandler
-import util.FileManager
-import util.KeyValueStorage
-import util.onError
-import util.onSuccess
+import util.*
 
 class ImporterViewModel(
     private val iXRayRESTClient: IXRayRESTClient,
@@ -177,8 +176,6 @@ class ImporterViewModel(
         logger.debug("Logging in")
         appState=AppState.LOGGING_IN
         delay(1000L)
-        //val httpClient = createHttpClient(keyValueStorage);
-        //val httpClient = createKtorHTTPClient();
         iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret).onSuccess {
             appState = AppState.DEFAULT
             loginState = LoginState.LOGGED_IN
@@ -217,7 +214,6 @@ class ImporterViewModel(
         logger.debug("Importing test cases")
         appState=AppState.IMPORTING
         percentageProcessed = 0f
-        //val client = createHttpClient(keyValueStorage)
         featureFileList.map{ file-> if(file.isChecked){
             logger.info("Importing file: "+file.path);
             iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
