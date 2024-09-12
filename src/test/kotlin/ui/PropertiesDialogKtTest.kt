@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import io.mockk.every
 import io.mockk.mockkObject
+import networking.createHTTPClient
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import snackbar.SnackbarMessageHandler
@@ -19,6 +20,7 @@ import kotlin.test.BeforeTest
 
 internal class PropertiesDialogKtTest{
     lateinit var importerViewModel:ImporterViewModel
+    val httpClient = createHTTPClient()
 
     @BeforeTest
     fun setup(){
@@ -31,7 +33,7 @@ internal class PropertiesDialogKtTest{
         every { Constants.PROJECT_KEY} returns ""
 
         val keyValueStorageImpl = KeyValueStorageImpl()
-        val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
+        val xRayRESTClient = XRayRESTClient(httpClient,keyValueStorageImpl)
         val snackbarMessageHandler = SnackbarMessageHandler()
         importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
     }

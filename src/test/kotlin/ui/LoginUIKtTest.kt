@@ -16,6 +16,7 @@ import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.*
+import networking.createHTTPClient
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -34,11 +35,13 @@ internal class LoginUIKtTest {
     val initialXrayClientSecret = "TestClientSecret"
     val updatedXrayClientID = "UpdatedTestClientID"
     val updatedXrayClientSecret = "UpdatedTestClientSecret"
+    val httpClient = createHTTPClient()
+
     @BeforeTest
     fun setup(){
         System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+ File.separator+"resources"+ File.separator+"common")
         val keyValueStorageImpl = KeyValueStorageImpl()
-        val xRayRESTClient = XRayRESTClient(keyValueStorageImpl)
+        val xRayRESTClient = XRayRESTClient(httpClient,keyValueStorageImpl)
         val snackbarMessageHandler = SnackbarMessageHandler()
         importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
         importerViewModelMock = mockk<ImporterViewModel>()

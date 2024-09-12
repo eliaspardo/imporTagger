@@ -9,34 +9,38 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.network.*
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import mu.KotlinLogging
 import networking.IXRayRESTClient
-import networking.createKtorHTTPClient
-import util.*
+import util.KeyValueStorage
+import util.NetworkError
+import util.Result
+import util.XRayError
 import java.io.File
 
-class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTClient{
+class XRayRESTClient(private var httpClient: HttpClient, private var keyValueStorage: KeyValueStorage): IXRayRESTClient{
     private val projectKey = Constants.PROJECT_KEY
     private val logger = KotlinLogging.logger {}
     override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): Result<LoginResponse, NetworkError> {
         logger.info("Logging into XRay")
-        val client = createKtorHTTPClient()
         try {
-            val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
+            val response: HttpResponse = httpClient.post("https://xray.cloud.getxray.app/api/v2/authenticate") {
                 contentType(ContentType.Application.Json)
-                setBody(
-                    "{\n" +
-                            "    \"client_id\": \"" + xrayClientID + "\",\n" +
-                            "    \"client_secret\": \"" + xrayClientSecret + "\"\n" +
-                            "}"
-                )
+                setBody(buildJsonObject {
+                    put("client_id", xrayClientID)
+                    put("client_secret",xrayClientSecret)
+                })
             }
-
-            client.close()
+            // TODO How do we know this client will no longer be used?
+            //loginClient.close()
             return when (response.status.value){
                 in 200..299 -> {
                     // Remove double quotes from token. Save in storage
-                    keyValueStorage.token = response.bodyAsText().replace("\"", "")
+                    var newToken = response.bodyAsText().replace("\"", "")
+                    keyValueStorage.token = newToken
+                    println(newToken)
+                    httpClient.plugin(Auth).bearer { loadTokens{BearerTokens(newToken, "")} }
                     Result.Success(LoginResponse(response.bodyAsText()))
                 }
                 401 -> Result.Error(NetworkError.UNAUTHORIZED)
@@ -65,10 +69,6 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         val importResponseCode:Int
         var importResponseBody = ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList())
 
-        // TODO Fix this
-        val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
-        }?: run {return Result.Error(NetworkError.NO_TOKEN)}
-
         try {
             featureFileByteArray = File(featureFilePath).readBytes()
         }catch(exception:Exception){
@@ -81,7 +81,7 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
         }
 
         try{
-            val response: HttpResponse = client.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey="+projectKey) {
+            val response: HttpResponse = httpClient.post("https://xray.cloud.getxray.app/api/v1/import/feature?projectKey="+projectKey) {
                 setBody(
                     MultiPartFormDataContent(
                         formData {
@@ -110,7 +110,8 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
                 logger.error("Error serializing response: "+response.bodyAsText())
                 Result.Error(NetworkError.SERIALIZATION)
             }
-            client.close()
+            // TODO How do we know this client will no longer be used?
+            // httpClient.close()
 
             return when (importResponseCode){
                 in 200..299 -> {
@@ -147,17 +148,15 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
 
     override suspend fun downloadCucumberTestsFromXRay(testID: String, importerViewModel: ImporterViewModel): Result<ExportResponse, NetworkError> {
         logger.info("Downloading Cucumber Test from Xray "+testID);
-        // TODO Fix this
-        val client = keyValueStorage.token?.let { createKtorHTTPClient(it)
-        }?: run {return Result.Error(NetworkError.NO_TOKEN)}
         try {
             val httpResponse: HttpResponse =
-                client.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=" + testID) {
+                httpClient.get("https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=" + testID) {
                     onDownload { bytesSentTotal, contentLength ->
                         logger.debug("Received $bytesSentTotal bytes from $contentLength")
                     }
                 }
-            client.close()
+            // TODO How do we know we no longer need this client?
+            //client.close()
             return when (httpResponse.status.value){
                 in 200..299 -> {
                     logger.debug("There are no errors importing to XRay")
@@ -180,4 +179,5 @@ class XRayRESTClient(private var keyValueStorage: KeyValueStorage): IXRayRESTCli
             return Result.Error(NetworkError.REQUEST_TIMEOUT)
         }
     }
+
 }
