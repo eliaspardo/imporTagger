@@ -1,12 +1,9 @@
 package networking
 
 import ImporterViewModel
-import LoginResponse
 import XRayRESTClient
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
-import io.ktor.client.plugins.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import io.mockk.unmockkAll
@@ -14,7 +11,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import snackbar.SnackbarMessageHandler
-import util.KeyValueStorageImpl
 import util.NetworkError
 import util.Result
 import java.io.File
@@ -25,7 +21,6 @@ import kotlin.test.BeforeTest
 internal class XRayRESTClientTest {
     lateinit var xRayRESTClient:XRayRESTClient
     lateinit var importerViewModel:ImporterViewModel
-    val keyValueStorageImpl = KeyValueStorageImpl()
     val snackbarMessageHandler = SnackbarMessageHandler()
     val httpClient = createHTTPClient();
     val dummyToken = "eyJhbGciOiJIUzI1IsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnQiOiI1ZTg0MWY1Ny1mNTBkLTM3YzQtYjVkOC0wMTg5YmE5OTU2MzIiLCJhY2NvdW50SWQiOiI2Mjk1ZWM5YTliYzcxNTAwNjhjZDc5ZWUiLCJpc1hlYSI6ZmFsc2UsImlhdCI6MTcyNTYzNzM2NywiZXhwIjoxNzI1NzIzNzY3LCJhdWQiOiJDNDE5NDc4QTc0MEY0NjYyQjA4ODRGRjAyQUZEREE4MiIsImlzcyI6ImNvbS54cGFuZGl0LnBsdWdpbnMueHJheSIsInN1YiI6IkM0MTk0NzhBNzQwRjQ2NjJCMDg4NEZGMDJBRkREQTgyIn0.ilD_KAqCZq-nwDqoeM0dzMzxoAMv-kMEiAcEEuGVUXY".replace("\"", "")
@@ -33,13 +28,12 @@ internal class XRayRESTClientTest {
     @BeforeTest
     fun setup(){
         System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+ File.separator+"resources"+ File.separator+"common")
-        xRayRESTClient = XRayRESTClient(httpClient,keyValueStorageImpl)
-        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+        xRayRESTClient = XRayRESTClient(httpClient)
+        importerViewModel = ImporterViewModel(xRayRESTClient,snackbarMessageHandler)
     }
 
     @AfterTest
     fun tearDown(){
-        keyValueStorageImpl.cleanStorage()
         unmockkAll()
     }
 
@@ -65,7 +59,6 @@ internal class XRayRESTClientTest {
     fun importFileToXray_notLoggedIn() = runTest{
         // Setting a dummy TestInfoFile, clearing token
         importerViewModel.onTestInfoFileChooserClose(File("src/test/resources/TEST-3470_withPreconditions_untagged.feature"))
-        keyValueStorageImpl.cleanStorage()
         val result = xRayRESTClient.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.NO_TOKEN))
     }
@@ -74,21 +67,18 @@ internal class XRayRESTClientTest {
     fun importFileToXray_invalidToken() = runTest{
         // Setting a dummy TestInfoFile, setting dummy token
         importerViewModel.onTestInfoFileChooserClose(File("src/test/resources/TEST-3470_withPreconditions_untagged.feature"))
-        keyValueStorageImpl.token = dummyToken
         val result = xRayRESTClient.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
     }
 
     @Test
     fun downloadCucumberTestsFromXRay_notLoggedIn() = runTest{
-        keyValueStorageImpl.cleanStorage()
         val result = xRayRESTClient.downloadCucumberTestsFromXRay("testID",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.NO_TOKEN))
     }
 
     @Test
     fun downloadCucumberTestsFromXRay_invalidToken() = runTest{
-        keyValueStorageImpl.token = dummyToken
         val result = xRayRESTClient.downloadCucumberTestsFromXRay("testID",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
     }

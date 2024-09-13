@@ -18,17 +18,15 @@ import snackbar.LocalSnackbarController
 import snackbar.ProvideSnackbarController
 import snackbar.SnackbarMessageHandler
 import ui.PropertiesDialogUI
-import util.KeyValueStorageImpl
 import java.io.File
 
 
 fun main() = application {
     val icon = painterResource("icon.png")
-    val keyValueStorageImpl = KeyValueStorageImpl()
     val httpClient = createHTTPClient()
-    val xRayRESTClient = XRayRESTClient(httpClient, keyValueStorageImpl)
+    val xRayRESTClient = XRayRESTClient(httpClient)
     val snackbarMessageHandler = SnackbarMessageHandler()
-    val importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+    val importerViewModel = ImporterViewModel(xRayRESTClient,snackbarMessageHandler)
     var firstTimeRunning = true
 
     Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {

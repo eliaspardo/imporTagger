@@ -14,4 +14,5 @@ interface IXRayRESTClient {
     suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): Result<LoginResponse, NetworkError>
     suspend fun importFileToXray(featureFilePath: String,importerViewModel: ImporterViewModel): Result<ImportResponse, NetworkError>
     suspend fun downloadCucumberTestsFromXRay(testID: String, importerViewModel: ImporterViewModel): Result<ExportResponse, NetworkError>
+    fun clearBearerToken()
 }

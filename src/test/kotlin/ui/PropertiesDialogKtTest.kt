@@ -13,7 +13,6 @@ import networking.createHTTPClient
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import snackbar.SnackbarMessageHandler
-import util.KeyValueStorageImpl
 import java.io.File
 import java.nio.file.Paths
 import kotlin.test.BeforeTest
@@ -32,10 +31,9 @@ internal class PropertiesDialogKtTest{
         every { Constants.PRECONDITION_PREFIX} returns ""
         every { Constants.PROJECT_KEY} returns ""
 
-        val keyValueStorageImpl = KeyValueStorageImpl()
-        val xRayRESTClient = XRayRESTClient(httpClient,keyValueStorageImpl)
+        val xRayRESTClient = XRayRESTClient(httpClient)
         val snackbarMessageHandler = SnackbarMessageHandler()
-        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+        importerViewModel = ImporterViewModel(xRayRESTClient,snackbarMessageHandler)
     }
 
     @OptIn(ExperimentalTestApi::class)

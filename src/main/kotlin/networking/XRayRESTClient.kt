@@ -13,13 +13,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import mu.KotlinLogging
 import networking.IXRayRESTClient
-import util.KeyValueStorage
 import util.NetworkError
 import util.Result
 import util.XRayError
 import java.io.File
 
-class XRayRESTClient(private var httpClient: HttpClient, private var keyValueStorage: KeyValueStorage): IXRayRESTClient{
+class XRayRESTClient(private var httpClient: HttpClient): IXRayRESTClient{
     private val projectKey = Constants.PROJECT_KEY
     private val logger = KotlinLogging.logger {}
     override suspend fun logInOnXRay(xrayClientID:String, xrayClientSecret:String): Result<LoginResponse, NetworkError> {
@@ -36,10 +35,8 @@ class XRayRESTClient(private var httpClient: HttpClient, private var keyValueSto
             //loginClient.close()
             return when (response.status.value){
                 in 200..299 -> {
-                    // Remove double quotes from token. Save in storage
+                    // Remove double quotes from token.
                     var newToken = response.bodyAsText().replace("\"", "")
-                    keyValueStorage.token = newToken
-                    println(newToken)
                     httpClient.plugin(Auth).bearer { loadTokens{BearerTokens(newToken, "")} }
                     Result.Success(LoginResponse(response.bodyAsText()))
                 }
@@ -178,6 +175,10 @@ class XRayRESTClient(private var httpClient: HttpClient, private var keyValueSto
         } catch(e: HttpRequestTimeoutException) {
             return Result.Error(NetworkError.REQUEST_TIMEOUT)
         }
+    }
+
+    override fun clearBearerToken(){
+        httpClient.plugin(Auth).bearer { loadTokens { BearerTokens("","") } }
     }
 
 }

@@ -10,7 +10,6 @@ import util.*
 
 class ImporterViewModel(
     private val iXRayRESTClient: IXRayRESTClient,
-    private val keyValueStorage: KeyValueStorage,
     private val iUserMessageHandler: UserMessageHandler,
 ) {
 
@@ -190,12 +189,12 @@ class ImporterViewModel(
     }
 
     /*
-     * Logout cleans the storage (token) and clears feature and test info files
+     * Logout clears feature and test info files
      */
     fun logOut() {
         logger.debug("Logging out")
         appState=AppState.LOGGING_OUT
-        keyValueStorage.cleanStorage()
+        iXRayRESTClient.clearBearerToken()
         featureFileList.clear()
         testInfoFile.value= null
         appState = AppState.DEFAULT

@@ -1,9 +1,10 @@
 package ui
 
-import LOG_IN_CANCEL_BUTTON
+import AppState
 import ImporterViewModel
-import LOG_IN_CIRCULAR_PROGRESS_INDICATOR
 import LOG_IN_BUTTON
+import LOG_IN_CANCEL_BUTTON
+import LOG_IN_CIRCULAR_PROGRESS_INDICATOR
 import LOG_OUT_BUTTON
 import LoginState
 import XRAY_CLIENT_ID_FIELD
@@ -17,11 +18,9 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.*
 import networking.createHTTPClient
-import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import snackbar.SnackbarMessageHandler
-import util.KeyValueStorageImpl
 import java.io.File
 import java.nio.file.Paths
 import kotlin.test.AfterTest
@@ -40,10 +39,9 @@ internal class LoginUIKtTest {
     @BeforeTest
     fun setup(){
         System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+ File.separator+"resources"+ File.separator+"common")
-        val keyValueStorageImpl = KeyValueStorageImpl()
-        val xRayRESTClient = XRayRESTClient(httpClient,keyValueStorageImpl)
+        val xRayRESTClient = XRayRESTClient(httpClient)
         val snackbarMessageHandler = SnackbarMessageHandler()
-        importerViewModel = ImporterViewModel(xRayRESTClient,keyValueStorageImpl,snackbarMessageHandler)
+        importerViewModel = ImporterViewModel(xRayRESTClient,snackbarMessageHandler)
         importerViewModelMock = mockk<ImporterViewModel>()
     }
 
