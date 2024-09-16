@@ -91,7 +91,7 @@ internal class XRayRESTClientTest {
 
     @Test
     fun importFileToXray_notLoggedIn() = runTest{
-        // Setting dummy Test Info file and trying to import test case without token
+        // Setting dummy Test Info file and trying to import test case without logging in
         importerViewModel.onTestInfoFileChooserClose(File("src/test/resources/TEST-3470_withPreconditions_untagged.feature"))
         val result = xRayRESTClient.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
@@ -105,27 +105,7 @@ internal class XRayRESTClientTest {
 
     @Test
     fun logInOnXRay_success_mocked() = runTest{
-        val mockEngine = MockEngine { request ->
-            respond(
-                content = ByteReadChannel(dummyToken),
-                status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, "application/json")
-            )
-        }
-        val mockedHttpClient = HttpClient(mockEngine){
-            install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    isLenient = true
-                })
-            }
-            install(Auth) {
-                bearer {
-
-                }
-            }
-        }
-        var xRayRESTClientMocked = XRayRESTClient(mockedHttpClient)
+        var xRayRESTClientMocked = XRayRESTClient(getMockedHTTPClient(HttpStatusCode.OK))
         val result = xRayRESTClientMocked.logInOnXRay("test","test")
         assertEquals(result, Result.Success(LoginResponse(dummyToken)))
     }
@@ -133,6 +113,33 @@ internal class XRayRESTClientTest {
     @ParameterizedTest
     @MethodSource("responseCodes")
     fun logInOnXRay_responseCodes_mocked(httpStatusCode: HttpStatusCode, networkError: NetworkError) = runTest{
+        var xRayRESTClientMocked = XRayRESTClient(getMockedHTTPClient(httpStatusCode))
+        val result = xRayRESTClientMocked.logInOnXRay("test","test")
+        assertEquals(result, Result.Error(networkError))
+    }
+
+    @ParameterizedTest
+    @MethodSource("responseCodes")
+    fun importFileToXray_responseCodes_mocked(httpStatusCode: HttpStatusCode, networkError: NetworkError) = runTest{
+        // Setting dummy Test Info file and trying to import test case without logging in
+        importerViewModel.onTestInfoFileChooserClose(File("src/test/resources/TEST-3470_withPreconditions_untagged.feature"))
+        var xRayRESTClientMocked = XRayRESTClient(getMockedHTTPClient(httpStatusCode))
+        val result = xRayRESTClientMocked.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
+        assertEquals(result, Result.Error(networkError))
+    }
+
+    @ParameterizedTest
+    @MethodSource("responseCodes")
+    fun downloadCucumberTestsFromXRay_responseCodes_mocked(httpStatusCode: HttpStatusCode, networkError: NetworkError) = runTest{
+        var xRayRESTClientMocked = XRayRESTClient(getMockedHTTPClient(httpStatusCode))
+        val result = xRayRESTClientMocked.downloadCucumberTestsFromXRay("test",importerViewModel)
+        assertEquals(result, Result.Error(networkError))
+    }
+
+    /*
+     * Returns a mocked HTTP client which responds with the status code passed in as param
+     */
+    fun getMockedHTTPClient(httpStatusCode: HttpStatusCode): HttpClient{
         val mockEngine = MockEngine { request ->
             respond(
                 content = ByteReadChannel(dummyToken),
@@ -140,7 +147,7 @@ internal class XRayRESTClientTest {
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
             )
         }
-        val mockedHttpClient = HttpClient(mockEngine){
+        return HttpClient(mockEngine) {
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = true
@@ -153,8 +160,5 @@ internal class XRayRESTClientTest {
                 }
             }
         }
-        var xRayRESTClientMocked = XRayRESTClient(mockedHttpClient)
-        val result = xRayRESTClientMocked.logInOnXRay("test","test")
-        assertEquals(result, Result.Error(networkError))
     }
 }
