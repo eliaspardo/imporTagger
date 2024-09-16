@@ -22,7 +22,7 @@ fun createHTTPClient(): HttpClient {
         install(Logging) {
             logger = Logger.DEFAULT
             if (kotlinLogger.isDebugEnabled) level = LogLevel.ALL
-            else level = LogLevel.HEADERS
+            else level = LogLevel.INFO
         }
         install(Auth) {
             bearer {

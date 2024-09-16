@@ -69,6 +69,7 @@ compose.desktop {
     application {
         mainClass = "AppKt"
         nativeDistributions {
+            modules("java.naming")
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "XRay Importer"
             packageVersion = "1.0.0"
