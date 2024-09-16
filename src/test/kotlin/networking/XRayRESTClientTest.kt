@@ -1,13 +1,22 @@
 package networking
 
 import ImporterViewModel
+import LoginState
 import XRayRESTClient
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import snackbar.SnackbarMessageHandler
@@ -87,12 +96,33 @@ internal class XRayRESTClientTest {
     fun testNewKtorClient() = runTest{
         val mockEngine = MockEngine { request ->
             respond(
-                content = ByteReadChannel("dummyToken"),
+                content = ByteReadChannel(dummyToken),
+                //content = HttpResponseData(jsonToken),
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
             )
         }
-        val mockedHttpClient = HttpClient(mockEngine){}
+        val mockedHttpClient = HttpClient(mockEngine){
+            install(ContentNegotiation) {
+                json(Json {
+                    prettyPrint = true
+                    isLenient = true
+                })
+            }
+            install(Auth) {
+                bearer {
+
+                }
+            }
+        }
+        var xRayRESTClient2 = XRayRESTClient(mockedHttpClient)
+        var importerViewModel2 = ImporterViewModel(xRayRESTClient2,snackbarMessageHandler)
+        xRayRESTClient2.logInOnXRay("test","test")
+        importerViewModel2.onUserNameChanged("test")
+        importerViewModel2.onPasswordChanged("test")
+
+        importerViewModel2.logIn()
+        assertEquals(importerViewModel2.loginState,LoginState.LOGGED_IN)
         //val result = xRayRESTClient.logInOnXRay(mockedHttpClient,"test", "test", importerViewModel)
         //assertEquals(result, Result.Success(LoginResponse("dummyToken")))
         //assertEquals(keyValueStorageImpl.token,"dummyToken")
