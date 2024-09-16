@@ -45,6 +45,7 @@ class XRayRESTClient(private var httpClient: HttpClient): IXRayRESTClient{
                 409 -> Result.Error(NetworkError.CONFLICT)
                 408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
                 413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+                429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS)
                 in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
                 else -> Result.Error(NetworkError.UNKNOWN)
             }
@@ -99,19 +100,17 @@ class XRayRESTClient(private var httpClient: HttpClient): IXRayRESTClient{
                 }
             }
 
-            importResponseCode = response.status.value
-
-            try{
-                importResponseBody = response.body()
-            }catch(se: SerializationException){
-                logger.error("Error serializing response: "+response.bodyAsText())
-                Result.Error(NetworkError.SERIALIZATION)
-            }
             // TODO How do we know this client will no longer be used?
             // httpClient.close()
 
-            return when (importResponseCode){
+            return when (response.status.value){
                 in 200..299 -> {
+                    try{
+                        importResponseBody = response.body()
+                    }catch(se: SerializationException){
+                        logger.error("Error serializing response: "+response.bodyAsText())
+                        Result.Error(NetworkError.SERIALIZATION)
+                    }
                     if(!importResponseBody.errors.isEmpty()){
                         logger.warn("There are errors")
                         logger.warn(importResponseBody.errors.toString())
@@ -127,6 +126,7 @@ class XRayRESTClient(private var httpClient: HttpClient): IXRayRESTClient{
                 409 -> Result.Error(NetworkError.CONFLICT)
                 408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
                 413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+                429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS)
                 in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
                 else -> Result.Error(NetworkError.UNKNOWN)
             }
@@ -164,6 +164,7 @@ class XRayRESTClient(private var httpClient: HttpClient): IXRayRESTClient{
                 409 -> Result.Error(NetworkError.CONFLICT)
                 408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
                 413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+                429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS)
                 in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
                 else -> Result.Error(NetworkError.UNKNOWN)
             }

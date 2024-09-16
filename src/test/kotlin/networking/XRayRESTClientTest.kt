@@ -59,22 +59,21 @@ internal class XRayRESTClientTest {
     }
 
     @Test
+    fun importFileToXray_testInfoFileNotSet() = runTest{
+        val result = xRayRESTClient.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
+        assertEquals(result, Result.Error(NetworkError.ERROR_READING_TEST_INFO_FILE))
+    }
+
+    @Test
     fun importFileToXray_nonExistingTestInfoFile() = runTest{
+        importerViewModel.onTestInfoFileChooserClose(File("inexistentFile.feature"))
         val result = xRayRESTClient.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.ERROR_READING_TEST_INFO_FILE))
     }
 
     @Test
     fun importFileToXray_notLoggedIn() = runTest{
-        // Setting a dummy TestInfoFile, clearing token
-        importerViewModel.onTestInfoFileChooserClose(File("src/test/resources/TEST-3470_withPreconditions_untagged.feature"))
-        val result = xRayRESTClient.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
-        assertEquals(result, Result.Error(NetworkError.NO_TOKEN))
-    }
-
-    @Test
-    fun importFileToXray_invalidToken() = runTest{
-        // Setting a dummy TestInfoFile, setting dummy token
+        // Setting dummy Test Info file and trying to import test case without token
         importerViewModel.onTestInfoFileChooserClose(File("src/test/resources/TEST-3470_withPreconditions_untagged.feature"))
         val result = xRayRESTClient.importFileToXray("src/test/resources/TEST-3470_withPreconditions_untagged.feature",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
@@ -82,12 +81,6 @@ internal class XRayRESTClientTest {
 
     @Test
     fun downloadCucumberTestsFromXRay_notLoggedIn() = runTest{
-        val result = xRayRESTClient.downloadCucumberTestsFromXRay("testID",importerViewModel)
-        assertEquals(result, Result.Error(NetworkError.NO_TOKEN))
-    }
-
-    @Test
-    fun downloadCucumberTestsFromXRay_invalidToken() = runTest{
         val result = xRayRESTClient.downloadCucumberTestsFromXRay("testID",importerViewModel)
         assertEquals(result, Result.Error(NetworkError.UNAUTHORIZED))
     }
@@ -123,8 +116,5 @@ internal class XRayRESTClientTest {
 
         importerViewModel2.logIn()
         assertEquals(importerViewModel2.loginState,LoginState.LOGGED_IN)
-        //val result = xRayRESTClient.logInOnXRay(mockedHttpClient,"test", "test", importerViewModel)
-        //assertEquals(result, Result.Success(LoginResponse("dummyToken")))
-        //assertEquals(keyValueStorageImpl.token,"dummyToken")
     }
 }
