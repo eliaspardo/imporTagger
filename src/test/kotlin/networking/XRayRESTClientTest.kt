@@ -2,7 +2,6 @@ package networking
 
 import ImporterViewModel
 import LoginResponse
-import LoginState
 import XRayRESTClient
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -17,8 +16,6 @@ import io.ktor.utils.io.*
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

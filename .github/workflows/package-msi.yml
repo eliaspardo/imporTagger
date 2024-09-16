@@ -43,7 +43,7 @@ jobs:
 
       - name: Publish msi artifact
         if: success()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}\build\compose\binaries\main\msi\XRay Importer-1.0.0.msi
           name: XRay Importer-1.0.0.msi
@@ -52,7 +52,7 @@ jobs:
 
       - name: Store reports
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports
           path: |
