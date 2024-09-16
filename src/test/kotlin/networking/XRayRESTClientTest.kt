@@ -1,6 +1,7 @@
 package networking
 
 import ImporterViewModel
+import LoginResponse
 import LoginState
 import XRayRESTClient
 import io.ktor.client.*
@@ -9,6 +10,7 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
@@ -19,6 +21,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import snackbar.SnackbarMessageHandler
 import util.NetworkError
 import util.Result
@@ -34,6 +39,19 @@ internal class XRayRESTClientTest {
     val httpClient = createHTTPClient();
     val dummyToken = "eyJhbGciOiJIUzI1IsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnQiOiI1ZTg0MWY1Ny1mNTBkLTM3YzQtYjVkOC0wMTg5YmE5OTU2MzIiLCJhY2NvdW50SWQiOiI2Mjk1ZWM5YTliYzcxNTAwNjhjZDc5ZWUiLCJpc1hlYSI6ZmFsc2UsImlhdCI6MTcyNTYzNzM2NywiZXhwIjoxNzI1NzIzNzY3LCJhdWQiOiJDNDE5NDc4QTc0MEY0NjYyQjA4ODRGRjAyQUZEREE4MiIsImlzcyI6ImNvbS54cGFuZGl0LnBsdWdpbnMueHJheSIsInN1YiI6IkM0MTk0NzhBNzQwRjQ2NjJCMDg4NEZGMDJBRkREQTgyIn0.ilD_KAqCZq-nwDqoeM0dzMzxoAMv-kMEiAcEEuGVUXY".replace("\"", "")
 
+
+    companion object {
+        @JvmStatic
+        fun responseCodes() = listOf(
+            Arguments.of(HttpStatusCode.Unauthorized,NetworkError.UNAUTHORIZED),
+            Arguments.of(HttpStatusCode.NotFound,NetworkError.NOT_FOUND),
+            Arguments.of(HttpStatusCode.Conflict,NetworkError.CONFLICT),
+            Arguments.of(HttpStatusCode.RequestTimeout,NetworkError.REQUEST_TIMEOUT),
+            Arguments.of(HttpStatusCode.PayloadTooLarge,NetworkError.PAYLOAD_TOO_LARGE),
+            Arguments.of(HttpStatusCode.TooManyRequests,NetworkError.TOO_MANY_REQUESTS),
+            Arguments.of(HttpStatusCode.InternalServerError,NetworkError.SERVER_ERROR)
+        )
+    }
     @BeforeTest
     fun setup(){
         System.setProperty("compose.application.resources.dir", Paths.get("").toAbsolutePath().toString()+ File.separator+"resources"+ File.separator+"common")
@@ -86,11 +104,10 @@ internal class XRayRESTClientTest {
     }
 
     @Test
-    fun testNewKtorClient() = runTest{
+    fun logInOnXRay_success_mocked() = runTest{
         val mockEngine = MockEngine { request ->
             respond(
                 content = ByteReadChannel(dummyToken),
-                //content = HttpResponseData(jsonToken),
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
             )
@@ -108,13 +125,36 @@ internal class XRayRESTClientTest {
                 }
             }
         }
-        var xRayRESTClient2 = XRayRESTClient(mockedHttpClient)
-        var importerViewModel2 = ImporterViewModel(xRayRESTClient2,snackbarMessageHandler)
-        xRayRESTClient2.logInOnXRay("test","test")
-        importerViewModel2.onUserNameChanged("test")
-        importerViewModel2.onPasswordChanged("test")
+        var xRayRESTClientMocked = XRayRESTClient(mockedHttpClient)
+        val result = xRayRESTClientMocked.logInOnXRay("test","test")
+        assertEquals(result, Result.Success(LoginResponse(dummyToken)))
+    }
 
-        importerViewModel2.logIn()
-        assertEquals(importerViewModel2.loginState,LoginState.LOGGED_IN)
+    @ParameterizedTest
+    @MethodSource("responseCodes")
+    fun logInOnXRay_responseCodes_mocked(httpStatusCode: HttpStatusCode, networkError: NetworkError) = runTest{
+        val mockEngine = MockEngine { request ->
+            respond(
+                content = ByteReadChannel(dummyToken),
+                status = httpStatusCode,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+        val mockedHttpClient = HttpClient(mockEngine){
+            install(ContentNegotiation) {
+                json(Json {
+                    prettyPrint = true
+                    isLenient = true
+                })
+            }
+            install(Auth) {
+                bearer {
+
+                }
+            }
+        }
+        var xRayRESTClientMocked = XRayRESTClient(mockedHttpClient)
+        val result = xRayRESTClientMocked.logInOnXRay("test","test")
+        assertEquals(result, Result.Error(networkError))
     }
 }
