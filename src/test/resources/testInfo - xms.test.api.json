@@ -1,0 +1,12 @@
+{
+    "fields": {
+        "project": {
+            "id": "12345"
+        },
+        "components" : [
+            {
+            "name":"component.name"
+            }
+        ]
+    }
+}

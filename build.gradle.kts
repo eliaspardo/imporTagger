@@ -2,6 +2,15 @@ import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+
+val ktor_version: String by project
+val jvm_version: String by project
+// Version 1.0.0 complains about the Kotlin version
+val multiplatformSettings_version: String by project
+val mockk_version: String by project
+val testng_version: String by project
+val app_version: String by project
+
 plugins {
     kotlin("jvm") version "1.6.10"
     id("org.jetbrains.compose") version "1.1.1"
@@ -9,7 +18,7 @@ plugins {
 }
 
 group = "me.elias"
-version = "1.0"
+version = "${app_version}"
 
 repositories {
     google()
@@ -17,22 +26,18 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
-val ktor_version: String by project
-val jvm_version: String by project
-// Version 1.0.0 complains about the Kotlin version
-val multiplatformSettings = "0.7.7"
-val mockkVersion = "1.10.0"
+
 
 dependencies {
-    implementation("org.testng:testng:7.1.0")
-    implementation("org.testng:testng:7.1.0")
+    implementation("org.testng:testng:${testng_version}")
+    implementation("org.testng:testng:${testng_version}")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     //implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:2.0.0")
     //@OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
     //testImplementation(compose.uiTest)
     testImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.2.1")
-    testImplementation("io.mockk:mockk:${mockkVersion}")
+    testImplementation("io.mockk:mockk:${mockk_version}")
     testImplementation("io.ktor:ktor-client-mock:$ktor_version")
     // Get rid of
     // WARNING: Failed to transform class ImporterViewModel
@@ -52,7 +57,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.5.3")
-    implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings")
+    implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings_version")
     implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.1.1")
     implementation("com.natpryce:konfig:1.6.10.0")
 }
@@ -72,7 +77,7 @@ compose.desktop {
             modules("java.naming")
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "XRay Importer"
-            packageVersion = "1.0.0"
+            packageVersion = "${app_version}"
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             windows {
                 iconFile.set(project.file("src/main/resources/icon.ico"))
@@ -87,4 +92,8 @@ compileKotlin.kotlinOptions {
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
     jvmTarget = jvm_version
+}
+
+task ("printAppVersion"){
+    println ("${app_version}")
 }
