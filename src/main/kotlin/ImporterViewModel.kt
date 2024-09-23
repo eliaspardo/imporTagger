@@ -10,9 +10,7 @@ import util.*
 
 class ImporterViewModel(
     private val iXRayRESTClient: IXRayRESTClient,
-    private val keyValueStorage: KeyValueStorage,
     private val iUserMessageHandler: UserMessageHandler,
-    private val config: Config
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -29,19 +27,10 @@ class ImporterViewModel(
         private set
     var percentageProcessed by mutableStateOf(0f)
         private set
-    var isLoggingIn by mutableStateOf(false)
-        private set
     var appState by mutableStateOf(AppState.DEFAULT)
         private set
     var loginState by mutableStateOf(LoginState.DEFAULT)
         private set
-
-    var loginResponseCode by mutableStateOf(404)
-    var loginResponseMessage by mutableStateOf("")
-
-    var importResponseCode by mutableStateOf(404)
-    var importResponseMessage by mutableStateOf("")
-    var importResponseBody by mutableStateOf<ImportResponse>(ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList()))
 
     /*
      * Lambda callback functions for the UI
@@ -60,8 +49,16 @@ class ImporterViewModel(
         appState = AppState.DEFAULT
     }
 
-    var onLoginChanged: (username: String, password: String)-> Unit = { username, password ->
+    /*
+     * Lambda callback functions for the UI
+     * Log In
+     */
+
+    var onUserNameChanged: (username: String)-> Unit = { username ->
         this.xrayClientID = username
+    }
+
+    var onPasswordChanged: (password: String)-> Unit = { password ->
         this.xrayClientSecret = password
     }
 
@@ -175,19 +172,15 @@ class ImporterViewModel(
     suspend fun logIn() {
         logger.debug("Logging in")
         appState=AppState.LOGGING_IN
-        isLoggingIn=true
         delay(1000L)
-        iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret,this@ImporterViewModel).onSuccess {
-            isLoggingIn=false
+        iXRayRESTClient.logInOnXRay(xrayClientID,xrayClientSecret).onSuccess {
             appState = AppState.DEFAULT
             loginState = LoginState.LOGGED_IN
             xrayClientSecret=""
             iUserMessageHandler.showUserMessage("Successfully logged in")
             logger.debug("Successfully logged in")
         }.onError {
-            isLoggingIn=false
             appState = AppState.DEFAULT
-            // TODO This is not working. Works with LoginState.LOGGED_OUT.
             loginState = LoginState.ERROR
             xrayClientSecret=""
             iUserMessageHandler.showUserMessage("Error logging in "+it)
@@ -196,14 +189,12 @@ class ImporterViewModel(
     }
 
     /*
-     * Logout cleans the storage (token) and clears feature and test info files
+     * Logout clears feature and test info files
      */
     fun logOut() {
         logger.debug("Logging out")
         appState=AppState.LOGGING_OUT
-        isLoggingIn=true
-        keyValueStorage.cleanStorage()
-        isLoggingIn=false
+        iXRayRESTClient.clearBearerToken()
         featureFileList.clear()
         testInfoFile.value= null
         appState = AppState.DEFAULT
@@ -221,18 +212,17 @@ class ImporterViewModel(
         appState=AppState.IMPORTING
         percentageProcessed = 0f
         featureFileList.map{ file-> if(file.isChecked){
-
             logger.info("Importing file: "+file.path);
             iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
                 logger.info("Import and tagging OK. Starting Tagging.");
                 // On Success start tagging tests and preconditions
                 val fileManager = FileManager()
-                val xRayTagger = XRayTagger(iUserMessageHandler,config)
-                if(!importResponseBody.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, importResponseBody.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
-                if(!importResponseBody.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, importResponseBody.updatedOrCreatedPreconditions, fileManager)
+                val xRayTagger = XRayTagger(iUserMessageHandler)
+                if(!it.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, it.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
+                if(!it.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, it.updatedOrCreatedPreconditions, fileManager)
 
                 file.isImported = true
-                iUserMessageHandler.showUserMessage("Imported file successfully")
+                iUserMessageHandler.showUserMessage("Imported file successfully: "+file.name)
             }.onError {
                 logger.error("Error importing file: "+it);
                 iUserMessageHandler.showUserMessage("Error importing file: "+it)

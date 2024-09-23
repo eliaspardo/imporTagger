@@ -41,7 +41,7 @@ jobs:
 
       - name: Publish deb artifact
         if: success()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/build/compose/binaries/main/deb/xray-importer_1.0.0-1_amd64.deb
           name: xray-importer_1.0.0-1_amd64.deb
@@ -49,7 +49,7 @@ jobs:
 
       - name: Store reports
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports
           path: |

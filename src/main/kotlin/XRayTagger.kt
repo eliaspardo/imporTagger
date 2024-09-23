@@ -1,13 +1,16 @@
+import exceptions.FeatureFileTaggingException
+import exceptions.NoPreconditionFoundException
+import exceptions.NoScenarioFoundException
+import io.ktor.client.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
-import util.Config
 import util.FileManager
 import util.onError
 import util.onSuccess
 import java.io.File
 
-class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Config) {
+class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     private val testTag = Constants.TEST_TAG
     private val preconditionTag = Constants.PRECONDITION_TAG
     private val preconditionPrefix = Constants.PRECONDITION_PREFIX
@@ -50,7 +53,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
                 return lineNumber;
             }
         }
-        return 0;
+        throw NoScenarioFoundException("Scenario "+scenario+" not found in file!");
     }
 
     // Parse Feature File looking for Precondition. Get line number.
@@ -65,7 +68,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
                 return lineNumber;
             }
         }
-        return 0;
+        throw NoPreconditionFoundException("Precondition not found in file!");
     }
 
     // Check if previous line is tagged.
@@ -144,8 +147,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
                 return scenario;
             }
         }
-        // TODO This should return an exception
-        return scenario;
+        throw NoScenarioFoundException("No Scenario found in file!")
     }
 
     fun getPrecondition(unzippedFileLines: List<String>):String{
@@ -157,8 +159,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
                 return precondition;
             }
         }
-        // TODO This should return an exception
-        return precondition;
+        throw NoPreconditionFoundException("Precondition not found in file!");
     }
 
     suspend fun processUpdatedOrCreatedTests(
@@ -169,7 +170,14 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
         importerViewModel: ImporterViewModel
     ) {
         logger.info("Processing Tests for "+featureFilePath)
-        val featureFileLines = fileManager.readFile(featureFilePath)
+        var featureFileLines:MutableList<String>
+        try{
+            featureFileLines = fileManager.readFile(featureFilePath)
+        }catch(exception: Exception){
+            logger.error("Error reading file "+featureFilePath);
+            iUserMessageHandler.showUserMessage("Error reading file "+featureFilePath)
+            return
+        }
         for (test in updatedOrCreatedTests){
             val testID = test.key
             // Check if feature file is already tagged, if not, start tagging process
@@ -185,17 +193,22 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
 
                         // Get Scenario from extracted file
                         val unzippedFileLines = fileManager.readFile(unzippedTestFile)
-                        val scenario = getScenario(unzippedFileLines)
-                        fileManager.deleteFile(File(unzippedTestFile))
-
-                        // Find Scenario in featureFile and tag it
-                        val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
-                        fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                        try {
+                            val scenario = getScenario(unzippedFileLines)
+                            // Find Scenario in featureFile and tag it
+                            val featureFileLinesTagged = tagTest(scenario, testID, featureFileLines)
+                            fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                        }catch(nsfe: NoScenarioFoundException){
+                            logger.error("No scenario found in unzipped file: "+unzippedTestFile);
+                            iUserMessageHandler.showUserMessage("No scenario found in unzipped file: "+unzippedTestFile)
+                        }finally{
+                            // Always delete file
+                            fileManager.deleteFile(File(unzippedTestFile))
+                        }
                     }.onError {
-                        // TODO Return exception
                         logger.error("Error tagging tests in "+featureFilePath);
                         iUserMessageHandler.showUserMessage("Error tagging tests in "+featureFilePath)
-                        return
+                        throw FeatureFileTaggingException("Error tagging tests in "+featureFilePath)
                     }
             }
         }
@@ -213,9 +226,14 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler, config: Co
             val preconditionID = precondition.key
             if(!isFileTagged(featureFileLines,preconditionID)) {
                 logger.info("File is not tagged")
-                // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
-                val featureFileLinesTagged = tagPrecondition(preconditionID, featureFileLines)
-                fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                try{
+                    // Find Precondition in featureFile and tag it. Cannot export from XRay so have to go with hardcoded prefix.
+                    val featureFileLinesTagged = tagPrecondition(preconditionID, featureFileLines)
+                    fileManager.writeFile(featureFilePath, featureFileLinesTagged)
+                }catch(npfe: NoPreconditionFoundException){
+                    logger.error("Precondition not found in "+featureFilePath);
+                    iUserMessageHandler.showUserMessage("Precondition not found in "+featureFilePath)
+                }
             }else{
                 logger.info("file is tagged")
             }

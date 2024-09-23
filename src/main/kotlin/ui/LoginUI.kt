@@ -11,16 +11,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.CoroutineScope
+
+
+const val XRAY_CLIENT_ID_FIELD = "xRayClientIDField"
+const val XRAY_CLIENT_SECRET_FIELD = "xRayClientSecretField"
+const val LOG_OUT_BUTTON = "logOutButton"
+const val LOG_IN_BUTTON = "logInButton"
+const val LOG_IN_CANCEL_BUTTON = "cancelLoginButton"
+const val LOG_IN_CIRCULAR_PROGRESS_INDICATOR = "loginCircularProgressIndicator"
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginBox(
-    onLoginChanged: (username: String, password:String) -> Unit,
+    onUserNameChanged: (username: String) -> Unit,
+    onPasswordChanged: (username: String) -> Unit,
     onLoginClick: () -> Unit,
     onLoginCancelClick: () -> Unit,
     importerViewModel: ImporterViewModel
@@ -36,15 +45,16 @@ fun LoginBox(
             val focusManager = LocalFocusManager.current
             OutlinedTextField(
                 value = importerViewModel.xrayClientID,
-                onValueChange = { onLoginChanged(it, importerViewModel.xrayClientSecret) },
+                onValueChange = { onUserNameChanged(it) },
                 label = { Text("XRay Client ID") },
-                modifier = Modifier.padding(5.dp)
+                modifier = Modifier.padding(5.dp).testTag(XRAY_CLIENT_ID_FIELD)
                 .onKeyEvent {
+                    // Handling of tab navigation
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
                         // TODO Tab goes to next field, but writes tab, removing it here, not very elegant
                         // TODO When doing Alt+Tab the last character is deleted
-                        onLoginChanged(importerViewModel.xrayClientID.substring(0, maxOf(importerViewModel.xrayClientID.length - 1,0)), importerViewModel.xrayClientSecret)
+                        onUserNameChanged(importerViewModel.xrayClientID.substring(0, maxOf(importerViewModel.xrayClientID.length - 1,0)))
                         true
                     } else {
                         false
@@ -53,13 +63,14 @@ fun LoginBox(
             )
             OutlinedTextField(
                 value = importerViewModel.xrayClientSecret,
-                onValueChange = { onLoginChanged(importerViewModel.xrayClientID, it) },
+                onValueChange = { onPasswordChanged(it) },
                 label = { Text("XRay Client Secret") },
-                modifier = Modifier.padding(5.dp)
+                modifier = Modifier.padding(5.dp).testTag(XRAY_CLIENT_SECRET_FIELD)
                 .onKeyEvent {
+                    // Handling of tab navigation
                     if (it.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
-                        onLoginChanged(importerViewModel.xrayClientID, importerViewModel.xrayClientSecret.substring(0, maxOf(importerViewModel.xrayClientSecret.length - 1,0)))
+                        onPasswordChanged(importerViewModel.xrayClientSecret.substring(0, maxOf(importerViewModel.xrayClientSecret.length - 1,0)))
                         true
                     } else {
                         false
@@ -86,12 +97,12 @@ fun LoginBox(
             )
         }
         if (importerViewModel.appState != AppState.LOGGING_IN) {
-            Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled()) {
+            Button(onClick = onLoginClick, enabled = importerViewModel.isLoginButtonEnabled(), modifier = Modifier.testTag(LOG_IN_BUTTON)) {
                 Text("Log In")
             }
         } else {
-            CircularProgressIndicator()
-            Button(onClick = onLoginCancelClick, enabled = true){
+            CircularProgressIndicator(modifier = Modifier.testTag(LOG_IN_CIRCULAR_PROGRESS_INDICATOR))
+            Button(onClick = onLoginCancelClick, enabled = true, modifier = Modifier.testTag(LOG_IN_CANCEL_BUTTON)){
                 Text("Cancel")
             }
         }
@@ -103,13 +114,13 @@ fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp)
-    ){
+    ) {
         Text(text = "Logged in as ${importerViewModel.xrayClientID}", fontSize = 25.sp)
-        if(importerViewModel.appState!=AppState.LOGGING_OUT) {
-            Button(onClick = onLogoutClick, enabled = importerViewModel.isLogoutButtonEnabled()) {
+        if (importerViewModel.appState != AppState.LOGGING_OUT) {
+            Button(onClick = onLogoutClick, enabled = importerViewModel.isLogoutButtonEnabled(), modifier = Modifier.testTag(LOG_OUT_BUTTON)) {
                 Text("Log Out")
             }
-        }else {
+        } else {
             CircularProgressIndicator()
         }
     }
@@ -117,17 +128,17 @@ fun LogoutBox(onLogoutClick: () -> Unit,importerViewModel: ImporterViewModel) {
 
 @Composable
 fun XRayLoginBox(
-    onLoginChanged: (username: String, password: String) -> Unit,
+    onUserNameChanged: (username: String) -> Unit,
+    onPasswordChanged: (username: String) -> Unit,
     onLoginClick: () -> Unit,
     onLoginCancelClick: () -> Unit,
     onLogoutClick: () -> Unit,
     importerViewModel: ImporterViewModel
 ) {
-    if(importerViewModel.loginState==LoginState.DEFAULT||importerViewModel.loginState==LoginState.ERROR||importerViewModel.loginState==LoginState.LOGGED_OUT){
-        LoginBox(onLoginChanged, onLoginClick, onLoginCancelClick, importerViewModel)
-    }else{
+    if(importerViewModel.loginState==LoginState.LOGGED_IN){
         LogoutBox(onLogoutClick,importerViewModel)
+    }else{
+        LoginBox(onUserNameChanged, onPasswordChanged, onLoginClick, onLoginCancelClick, importerViewModel)
     }
 }
-
 

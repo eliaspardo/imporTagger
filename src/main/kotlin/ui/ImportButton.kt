@@ -18,10 +18,6 @@ fun ImportButton(onImportClick: () -> Unit, onImportCancelClick: ()-> Unit, impo
         Button(onClick = onImportClick, enabled = importerViewModel.isImportButtonEnabled()) {
             Text("Import")
         }
-        // TODO Review this
-        /*if(!importResponseBody.errors.isEmpty()){
-            Text(importResponseBody.errors.toString())
-        }*/
     }else {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

@@ -2,6 +2,7 @@ package util
 
 enum class NetworkError : Error {
     REQUEST_TIMEOUT,
+    BAD_REQUEST,
     UNAUTHORIZED,
     CONFLICT,
     TOO_MANY_REQUESTS,
@@ -10,7 +11,7 @@ enum class NetworkError : Error {
     SERVER_ERROR,
     SERIALIZATION,
     NOT_FOUND,
-    NO_HTTP_CLIENT,
-    NO_TOKEN,
+    ERROR_READING_FEATURE_FILE,
+    ERROR_READING_TEST_INFO_FILE,
     UNKNOWN;
 }
