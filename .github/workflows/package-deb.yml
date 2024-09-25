@@ -59,9 +59,3 @@ jobs:
           path: ${{ github.workspace }}/build/compose/binaries/main/deb/xray-importer_1.0.0-1_amd64.deb
           name: xray-importer_1.0.0-1_amd64.deb
           #/home/runner/work/xray-importer/xray-importer/build/compose/binaries/main/deb/xray-importer_1.0.0-1_amd64.deb
-
-      - name: Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: DEB Package Upload
-          branch: main

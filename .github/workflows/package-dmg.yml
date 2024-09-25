@@ -59,9 +59,3 @@ jobs:
           path: ${{ github.workspace }}/build/compose/binaries/main/dmg/XRay Importer-1.0.0.dmg
           name: XRay Importer-1.0.0.dmg
           #/Users/runner/work/xray-importer/xray-importer/build/compose/binaries/main/dmg/XRay Importer-1.0.0.dmg
-
-      - name: Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: DMG Package Upload
-          branch: main
