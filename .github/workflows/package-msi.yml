@@ -58,7 +58,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}\build\compose\binaries\main\msi\XRay Importer-1.0.0.msi
-          name: XRay Importer-1.0.0.msi
+          path: ${{ github.workspace }}\build\compose\binaries\main\msi\XRay Importer-${{env.app_version}}.msi
+          name: XRay Importer-${{env.app_version}}.msi
           #path: ${{ github.workspace }}\setup\setup.msi
           #D:\a\xray-importer\xray-importer\build\compose\binaries\main\msi\XRay Importer-1.0.0.msi

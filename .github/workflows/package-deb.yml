@@ -56,6 +56,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}/build/compose/binaries/main/deb/xray-importer_1.0.0-1_amd64.deb
-          name: xray-importer_1.0.0-1_amd64.deb
+          path: ${{ github.workspace }}/build/compose/binaries/main/deb/xray-importer_${{env.app_version}}-1_amd64.deb
+          name: xray-importer_${{env.app_version}}-1_amd64.deb
           #/home/runner/work/xray-importer/xray-importer/build/compose/binaries/main/deb/xray-importer_1.0.0-1_amd64.deb
