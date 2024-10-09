@@ -15,6 +15,7 @@ plugins {
     kotlin("jvm") version "1.6.10"
     id("org.jetbrains.compose") version "1.1.1"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.6.0"
+    id("com.github.jk1.dependency-license-report") version "2.0"
 }
 
 group = "me.elias"
@@ -26,11 +27,13 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
+licenseReport {
+    renderers = arrayOf(com.github.jk1.license.render.JsonReportRenderer()) // You can also use plain text or other formats
+    outputDir = "${project.buildDir}/reports/licenses"
+}
 
 
 dependencies {
-    implementation("org.testng:testng:${testng_version}")
-    implementation("org.testng:testng:${testng_version}")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     //implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:2.0.0")
@@ -57,7 +60,6 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.5.3")
-    implementation("com.russhwolf:multiplatform-settings-no-arg:$multiplatformSettings_version")
     implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.1.1")
     implementation("com.natpryce:konfig:1.6.10.0")
 }

@@ -64,7 +64,6 @@ class XRayRESTClient(private var httpClient: HttpClient): IXRayRESTClient{
 
         val featureFileByteArray:ByteArray
         val testInfoFileByteArray:ByteArray
-        val importResponseCode:Int
         var importResponseBody = ImportResponse(errors = emptyList(), updatedOrCreatedTests = emptyList(), updatedOrCreatedPreconditions = emptyList())
 
         try {
