@@ -38,22 +38,9 @@ jobs:
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Retrieve Project Version (Windows) no q
-        run: ./gradlew printAppVersion
-
-      - name: Retrieve Project Version (Windows) no daemon
-        run: ./gradlew --no-daemon printAppVersion
-
-      - name: Retrieve Project Version (Windows)
-        run: ./gradlew -q printAppVersion
-
-      - name: Retrieve Project Version 2
-        run: echo "::set-output name=VERSION_NAME::$(./gradlew -q printAppVersion)"
-        id: app_version2
-
       - name: Retrieve Project Version
         run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printAppVersion)"
+          echo "::set-output name=VERSION_NAME::$(./gradlew -q printAppVersion)"
         id: app_version
 
       - name: Get Version
