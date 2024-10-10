@@ -38,10 +38,16 @@ jobs:
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Check gradlew path
+      - name: Check gradlew path (Windows)
         run: |
           echo "GITHUB_WORKSPACE=${{github.workspace}}"
-          ls -al ${{github.workspace}}
+          Get-ChildItem -Force -Recurse ${{github.workspace}}
+        shell: pwsh
+      - name: Check gradlew path (CMD on Windows)
+        run: |
+          echo GITHUB_WORKSPACE=%GITHUB_WORKSPACE%
+          dir /a %GITHUB_WORKSPACE%
+        shell: cmd
 
       - name: Retrieve Project Version
         run: |
