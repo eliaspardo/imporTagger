@@ -40,7 +40,7 @@ jobs:
 
       - name: Retrieve Project Version (Windows)
         run: |
-          echo ./gradlew.bat -q printAppVersion
+          echo ./gradlew -q printAppVersion
 
       - name: Retrieve Project Version
         run: |
