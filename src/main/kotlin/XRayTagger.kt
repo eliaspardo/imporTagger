@@ -138,7 +138,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     }
 
     fun getScenario(unzippedFileLines: List<String>):String{
-        var scenario = "";
+        var scenario:String
         for (line in unzippedFileLines){
             // Looking for Scenario instead of Scenario: so we also capture scenario outlines
             if(line.contains("Scenario")){
@@ -151,7 +151,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     }
 
     fun getPrecondition(unzippedFileLines: List<String>):String{
-        var precondition = "";
+        var precondition:String
         for (line in unzippedFileLines){
             if(line.contains("Background:")){
                 logger.debug("Background found: "+line)

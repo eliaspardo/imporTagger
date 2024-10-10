@@ -36,6 +36,16 @@ jobs:
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
+      - name: Retrieve Project Version
+        run: echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printAppVersion)"
+        id: app_version
+
+      - name: Get Version
+        run: echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
+
+      - name: Print Version
+        run: echo "${{env.app_version}}"
+
       - name: Package DEB
         run: ./gradlew packageDeb
 
@@ -43,15 +53,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}/build/compose/binaries/main/deb/xray-importer_1.0.0-1_amd64.deb
-          name: xray-importer_1.0.0-1_amd64.deb
+          path: ${{ github.workspace }}/build/compose/binaries/main/deb/xray-importer_${{env.app_version}}-1_amd64.deb
+          name: xray-importer_${{env.app_version}}-1_amd64.deb
           #/home/runner/work/xray-importer/xray-importer/build/compose/binaries/main/deb/xray-importer_1.0.0-1_amd64.deb
-
-      - name: Store reports
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports
-          path: |
-            **/build/reports/
-            **/build/test-results/

@@ -38,6 +38,15 @@ jobs:
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
+      - name: Retrieve Project Version
+        run: |
+          echo "::set-output name=VERSION_NAME::$(./gradlew -q printAppVersion)"
+        id: app_version
+
+      - name: Get Version
+        run: |
+          echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}"
+
       - name: Package MSI
         run: ./gradlew packageMsi
 
@@ -45,16 +54,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}\build\compose\binaries\main\msi\XRay Importer-1.0.0.msi
-          name: XRay Importer-1.0.0.msi
+          path: ${{ github.workspace }}\build\compose\binaries\main\msi\XRay Importer-${{steps.app_version.outputs.VERSION_NAME}}.msi
+          name: XRay Importer-${{env.app_version}}.msi
           #path: ${{ github.workspace }}\setup\setup.msi
           #D:\a\xray-importer\xray-importer\build\compose\binaries\main\msi\XRay Importer-1.0.0.msi
-
-      - name: Store reports
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports
-          path: |
-            **/build/reports/
-            **/build/test-results/
