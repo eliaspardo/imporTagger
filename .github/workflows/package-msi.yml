@@ -39,15 +39,18 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Retrieve Project Version
-        run: echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew.bat -q printAppVersion)"
-        shell: cmd
+        run: |
+          version=$(${GITHUB_WORKSPACE}/gradlew -q printAppVersion)
+          echo "VERSION_NAME=$version" >> $GITHUB_ENV
         id: app_version
 
       - name: Get Version
-        run: echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
+        run: |
+          echo "app_version=${{env.VERSION_NAME}}"
 
       - name: Print Version
-        run: echo "${{env.app_version}}"
+        run: |
+          echo "The app version is ${{env.VERSION_NAME}}"
 
       - name: Package MSI
         run: ./gradlew packageMsi
