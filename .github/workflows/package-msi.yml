@@ -38,19 +38,28 @@ jobs:
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
+      - name: Debugging Step
+        run: |
+          ./gradlew -q printAppVersion
+          echo "version=$(./gradlew -q printAppVersion)"
+
+      - name: Check gradlew path
+        run: |
+          echo "GITHUB_WORKSPACE=${{github.workspace}}"
+          ls -al ${{github.workspace}}
+
       - name: Retrieve Project Version
         run: |
-          version=$(${GITHUB_WORKSPACE}/gradlew -q printAppVersion)
-          echo "VERSION_NAME=$version" >> $GITHUB_ENV
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printAppVersion)"
         id: app_version
 
       - name: Get Version
         run: |
-          echo "app_version=${{env.VERSION_NAME}}"
+          echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
 
       - name: Print Version
         run: |
-          echo "The app version is ${{env.VERSION_NAME}}"
+          echo "${{env.app_version}}"
 
       - name: Package MSI
         run: ./gradlew packageMsi
