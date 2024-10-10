@@ -39,7 +39,8 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Retrieve Project Version
-        run: echo "::set-output name=VERSION_NAME::$(./gradlew.bat -q printAppVersion)"
+        run: echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew.bat -q printAppVersion)"
+        shell: cmd
         id: app_version
 
       - name: Get Version
