@@ -37,17 +37,14 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Retrieve Project Version
-        run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printAppVersion)"
+        run: echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printAppVersion)"
         id: app_version
 
       - name: Get Version
-        run: |
-          echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
+        run: echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
 
       - name: Print Version
-        run: |
-          echo "${{env.app_version}}"
+        run: echo "${{env.app_version}}"
 
       - name: Package DMG
         run: ./gradlew packageDmg
