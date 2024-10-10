@@ -40,10 +40,7 @@ jobs:
 
       - name: Retrieve Project Version (Windows)
         run: |
-          ./gradlew.bat -q printAppVersion
-          version=$(./gradlew.bat -q printAppVersion)
-          echo "VERSION_NAME=$version" >> $GITHUB_ENV
-        shell: bash
+          echo ./gradlew.bat -q printAppVersion
 
       - name: Retrieve Project Version
         run: |
