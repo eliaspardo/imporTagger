@@ -97,5 +97,7 @@ compileTestKotlin.kotlinOptions {
 }
 
 task ("printAppVersion"){
-    println ("${app_version}")
+    doLast {
+        println("${app_version}")
+    }
 }
