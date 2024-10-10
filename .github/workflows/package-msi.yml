@@ -39,8 +39,11 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Retrieve Project Version (Windows)
-        run: |
-          echo ./gradlew -q printAppVersion
+        run: ./gradlew -q printAppVersion
+
+      - name: Retrieve Project Version 2
+        run: echo "::set-output name=VERSION_NAME::$(./gradlew -q printAppVersion)"
+        id: app_version2
 
       - name: Retrieve Project Version
         run: |
