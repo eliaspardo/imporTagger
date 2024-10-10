@@ -40,7 +40,7 @@ jobs:
 
       - name: Retrieve Project Version
         run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printAppVersion)"
+          echo "::set-output name=VERSION_NAME::$(./gradlew -q printAppVersion)"
         id: app_version
 
       - name: Get Version
