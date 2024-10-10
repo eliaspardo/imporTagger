@@ -45,11 +45,7 @@ jobs:
 
       - name: Get Version
         run: |
-          echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
-
-      - name: Print Version
-        run: |
-          echo "${{env.app_version}}"
+          echo "app_version=${{steps.app_version.outputs.VERSION_NAME}}"
 
       - name: Package MSI
         run: ./gradlew packageMsi
@@ -58,7 +54,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}\build\compose\binaries\main\msi\XRay Importer-${{env.app_version}}.msi
+          path: ${{ github.workspace }}\build\compose\binaries\main\msi\XRay Importer-${{steps.app_version.outputs.VERSION_NAME}}.msi
           name: XRay Importer-${{env.app_version}}.msi
           #path: ${{ github.workspace }}\setup\setup.msi
           #D:\a\xray-importer\xray-importer\build\compose\binaries\main\msi\XRay Importer-1.0.0.msi
