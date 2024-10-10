@@ -38,11 +38,6 @@ jobs:
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Debugging Step
-        run: |
-          ./gradlew -q printAppVersion
-          echo "version=$(./gradlew -q printAppVersion)"
-
       - name: Check gradlew path
         run: |
           echo "GITHUB_WORKSPACE=${{github.workspace}}"
