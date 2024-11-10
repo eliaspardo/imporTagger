@@ -52,6 +52,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}/build/compose/binaries/main/dmg/XRay Importer-${{env.app_version}}.dmg
-          name: XRay Importer-${{env.app_version}}.dmg
-          #/Users/runner/work/xray-importer/xray-importer/build/compose/binaries/main/dmg/XRay Importer-1.0.0.dmg
+          path: ${{ github.workspace }}/build/compose/binaries/main/dmg/imporTagger-${{env.app_version}}.dmg
+          name: imporTagger-${{env.app_version}}.dmg
+          #/Users/runner/work/imporTagger/imporTagger/build/compose/binaries/main/dmg/imporTagger-1.0.0.dmg

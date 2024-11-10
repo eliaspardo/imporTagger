@@ -1,9 +1,9 @@
-﻿# Feature File Importer for XRay
+﻿# imporTagger for XRay
 
-![example workflow](https://github.com/eliaspardo/xray-importer/actions/workflows/build-gradle-project.yml/badge.svg)
-![example workflow](https://github.com/eliaspardo/xray-importer/actions/workflows/package-msi.yml/badge.svg)
-![example workflow](https://github.com/eliaspardo/xray-importer/actions/workflows/package-dmg.yml/badge.svg)
-![example workflow](https://github.com/eliaspardo/xray-importer/actions/workflows/package-deb.yml/badge.svg)
+![example workflow](https://github.com/eliaspardo/imporTagger/actions/workflows/build-gradle-project.yml/badge.svg)
+![example workflow](https://github.com/eliaspardo/imporTagger/actions/workflows/package-msi.yml/badge.svg)
+![example workflow](https://github.com/eliaspardo/imporTagger/actions/workflows/package-dmg.yml/badge.svg)
+![example workflow](https://github.com/eliaspardo/imporTagger/actions/workflows/package-deb.yml/badge.svg)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -11,7 +11,7 @@
 
 If you're tired of manually logging into XRay, importing feature files, retrieving test and precondition IDs, and tagging each one by hand—only to repeat the process for every file—you've come to the right place!
 ## About
-The Feature File Importer for XRay was created to eliminate the frustration of manually importing Gherkin Feature Files into XRay (XRay) and tagging them afterward. 
+imporTagger for XRay was created to eliminate the frustration of manually importing Gherkin Feature Files into XRay (XRay) and tagging them afterward. 
 
 This tool provides a simple and efficient solution through a graphical user interface (GUI), allowing you to:
 

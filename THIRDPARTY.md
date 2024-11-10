@@ -1,6 +1,6 @@
 # Third-Party Software
 
-This document contains a list of third-party libraries that XRay Importer uses, including those usages that are merely for surfacing APIs for
+This document contains a list of third-party libraries that imporTagger for Xray uses, including those usages that are merely for surfacing APIs for
 library-specific functionality (via plugins) that Ktor provides.
 
 

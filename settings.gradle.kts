@@ -6,5 +6,5 @@ pluginManagement {
     }
     
 }
-rootProject.name = "XRay Importer"
+rootProject.name = "imporTagger"
 
