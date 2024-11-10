@@ -29,7 +29,7 @@ fun main() = application {
     val importerViewModel = ImporterViewModel(xRayRESTClient,snackbarMessageHandler)
     var firstTimeRunning = true
 
-    Window(onCloseRequest = ::exitApplication, title = "XRay Feature File Importer", icon= icon) {
+    Window(onCloseRequest = ::exitApplication, title = "imporTagger for Xray", icon= icon) {
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
         ProvideSnackbarController(
