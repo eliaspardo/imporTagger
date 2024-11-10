@@ -78,7 +78,7 @@ compose.desktop {
         nativeDistributions {
             modules("java.naming")
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "XRay Importer"
+            packageName = "imporTagger"
             packageVersion = "${app_version}"
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             windows {
