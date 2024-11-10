@@ -51,6 +51,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}/build/compose/binaries/main/deb/imporTagger_${{env.app_version}}-1_amd64.deb
+          path: ${{ github.workspace }}/build/compose/binaries/main/deb/importagger_${{env.app_version}}-1_amd64.deb
           name: imporTagger_${{env.app_version}}-1_amd64.deb
           #/home/runner/work/imporTagger/imporTagger/build/compose/binaries/main/deb/imporTagger_1.0.0-1_amd64.deb
