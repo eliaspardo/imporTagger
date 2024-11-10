@@ -25,7 +25,7 @@ You’ll find installers for Windows, macOS, and Linux in the repository. Just d
 
 Note that these bundles are unsigned, so you may encounter security warnings during installation.
 
-**MacOS** -  To run the app, execute the following command in the installation folder: ```xattr -cr Xray\ Importer.app/```
+**MacOS** -  To run the app, execute the following command in the installation folder: ```xattr -cr imporTagger.app/```
 
 This application was developed primarily on Windows. While basic functional tests have been performed on other platforms, issues may arise. If you encounter any, please raise a ticket!
 

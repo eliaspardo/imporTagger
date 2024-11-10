@@ -1,7 +1,6 @@
 import exceptions.FeatureFileTaggingException
 import exceptions.NoPreconditionFoundException
 import exceptions.NoScenarioFoundException
-import io.ktor.client.*
 import mu.KotlinLogging
 import networking.IXRayRESTClient
 import snackbar.UserMessageHandler
@@ -19,10 +18,10 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     fun tagTest(scenario: String, testID: String, featureFileLines: MutableList<String>) : MutableList<String> {
         logger.info("Tagging Test: "+testID+" "+scenario);
         // Parse Feature File looking for Scenario. Get line number.
-        var scenarioLine = findLineWhereScenario(scenario,featureFileLines);
+        val scenarioLine = findLineWhereScenario(scenario,featureFileLines);
 
         // Check if previous line is tagged, so tag is appended, otherwise, new line created.
-        var isPreviousLineTagged = checkIfPreviousLineIsTagged(scenarioLine, featureFileLines);
+        val isPreviousLineTagged = checkIfPreviousLineIsTagged(scenarioLine, featureFileLines);
 
         // Add tag
         return addTestTag(scenarioLine, testID, isPreviousLineTagged, featureFileLines);
@@ -31,7 +30,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     fun tagPrecondition(preconditionID: String, featureFileLines: MutableList<String>) : MutableList<String> {
         logger.info("Tagging Precondition: "+preconditionID);
         // Parse Feature File looking for Scenario. Get line number.
-        var preconditionLine = findLineWherePrecondition(featureFileLines);
+        val preconditionLine = findLineWherePrecondition(featureFileLines);
 
         // Add tag
         return addPreconditionTag(preconditionLine, preconditionID, featureFileLines);
@@ -42,11 +41,11 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
         logger.debug("Looking for Scenario/Precondition:"+scenario);
 
         // Trim tabs and whitespaces
-        var trimmedScenario = scenario.replace(" ","").replace("\t", "");
+        val trimmedScenario = scenario.replace(" ","").replace("\t", "");
         var lineNumber = 0;
         for(line in featureFileLines){
             lineNumber++;
-            var trimmedLine = line.replace(" ", "").replace("\t", "");
+            val trimmedLine = line.replace(" ", "").replace("\t", "");
             if (trimmedLine.contains(trimmedScenario)){
                 logger.debug("Found Scenario/Precondition in line:"+lineNumber);
                 logger.debug(line);
@@ -138,25 +137,21 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
     }
 
     fun getScenario(unzippedFileLines: List<String>):String{
-        var scenario:String
         for (line in unzippedFileLines){
             // Looking for Scenario instead of Scenario: so we also capture scenario outlines
             if(line.contains("Scenario")){
                 logger.debug("Scenario found: "+line)
-                scenario = line
-                return scenario;
+                return line;
             }
         }
         throw NoScenarioFoundException("No Scenario found in file!")
     }
 
     fun getPrecondition(unzippedFileLines: List<String>):String{
-        var precondition:String
         for (line in unzippedFileLines){
             if(line.contains("Background:")){
                 logger.debug("Background found: "+line)
-                precondition = line
-                return precondition;
+                return line;
             }
         }
         throw NoPreconditionFoundException("Precondition not found in file!");
@@ -186,7 +181,7 @@ class XRayTagger(private val iUserMessageHandler: UserMessageHandler) {
                 // Download zip file to know which scenario needs tagging
                 ixRayRESTClient.downloadCucumberTestsFromXRay(testID,importerViewModel)
                     .onSuccess {
-                        val zipFile = File.createTempFile("xrayImporter", ".zip")
+                        val zipFile = File.createTempFile("imporTagger", ".zip")
                         zipFile.writeBytes(it.exportedTestCase)
                         val unzippedTestFile = fileManager.unzipFile(zipFile)
                         fileManager.deleteFile(zipFile)
