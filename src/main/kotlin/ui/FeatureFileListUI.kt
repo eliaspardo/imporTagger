@@ -13,14 +13,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun FeatureFileListUI(onRemoveFile: (featureFile: FeatureFile) -> Unit, importerViewModel: ImporterViewModel) {
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+        Row(Modifier.fillMaxWidth(),  verticalAlignment = Alignment.CenterVertically) {
+            Text("Feature Files", Modifier.fillMaxWidth().height(30.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary, fontSize= 20.sp)
+        }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Import", Modifier.width(60.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary)
-            Text("Filename", Modifier.width(200.dp), textAlign = TextAlign.Left, color = MaterialTheme.colors.onPrimary)
-            Text("Path", Modifier.width(200.dp), textAlign = TextAlign.Left, color = MaterialTheme.colors.onPrimary)
+            Text("Selected", Modifier.width(80.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary)
+            Text("Filename", Modifier.width(300.dp), textAlign = TextAlign.Left, color = MaterialTheme.colors.onPrimary)
+            Text("Path", Modifier.width(300.dp), textAlign = TextAlign.Left, color = MaterialTheme.colors.onPrimary)
             Text("Remove", Modifier.width(60.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.onPrimary)
         }
         Column(Modifier.fillMaxWidth().background(MaterialTheme.colors.primary).verticalScroll(rememberScrollState())) {

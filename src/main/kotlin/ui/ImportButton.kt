@@ -1,22 +1,25 @@
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.Button
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun ImportButton(onImportClick: () -> Unit, onImportCancelClick: ()-> Unit, importerViewModel: ImporterViewModel) {
+fun ImportButton(onImportClick: () -> Unit, onImportCancelClick: ()-> Unit, onTaggingDisabled: (Boolean) -> Unit, importerViewModel: ImporterViewModel) {
     if(importerViewModel.appState!=AppState.IMPORTING) {
-        Button(onClick = onImportClick, enabled = importerViewModel.isImportButtonEnabled()) {
-            Text("Import")
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ){
+            Button(onClick = onImportClick, enabled = importerViewModel.isImportButtonEnabled()) {
+                Text("Import & Tag")
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
+                Text("Disable tagging?", textAlign = TextAlign.Center, color = MaterialTheme.colors.onBackground)
+                Switch(checked = importerViewModel.isTaggingDisabled, onCheckedChange = onTaggingDisabled)
+            }
         }
     }else {
         Column(

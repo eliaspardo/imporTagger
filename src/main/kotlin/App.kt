@@ -9,8 +9,10 @@ import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import networking.createHTTPClient
@@ -39,7 +41,7 @@ fun main() = application {
             snackbarMessageHandler.setSnackbarController(LocalSnackbarController.current)
             Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
             ) {
-                Column(Modifier.fillMaxWidth(), Arrangement.Center) {
+                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Row(Modifier.fillMaxWidth(), Arrangement.Center) {
                         XRayLoginBox(
                             importerViewModel.onUserNameChanged,
@@ -70,6 +72,7 @@ fun main() = application {
                         ImportButton(
                             importerViewModel.onImportClick,
                             importerViewModel.onImportCancelClick,
+                            importerViewModel.onTaggingDisabled,
                             importerViewModel
                         )
                     }
