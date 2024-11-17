@@ -10,16 +10,23 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ImportButton(onImportClick: () -> Unit, onImportCancelClick: ()-> Unit, onTaggingDisabled: (Boolean) -> Unit, importerViewModel: ImporterViewModel) {
     if(importerViewModel.appState!=AppState.IMPORTING) {
+        Row(horizontalArrangement = Arrangement.spacedBy(15.dp))
+        {
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
             Button(onClick = onImportClick, enabled = importerViewModel.isImportButtonEnabled()) {
                 Text("Import & Tag")
             }
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
                 Text("Disable tagging?", textAlign = TextAlign.Center, color = MaterialTheme.colors.onBackground)
                 Switch(checked = importerViewModel.isTaggingDisabled, onCheckedChange = onTaggingDisabled)
-            }
+
+        }
         }
     }else {
         Column(
