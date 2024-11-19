@@ -31,6 +31,8 @@ class ImporterViewModel(
         private set
     var loginState by mutableStateOf(LoginState.DEFAULT)
         private set
+    var isTaggingDisabled by mutableStateOf(false)
+        private set
 
     /*
      * Lambda callback functions for the UI
@@ -47,6 +49,10 @@ class ImporterViewModel(
         importCoroutineScope.cancel()
         importCoroutineScope = CoroutineScope(Dispatchers.Default)
         appState = AppState.DEFAULT
+    }
+
+    val onTaggingDisabled: (isTaggingDisabled:Boolean) -> Unit = {
+        this.isTaggingDisabled = it
     }
 
     /*
@@ -81,10 +87,6 @@ class ImporterViewModel(
         logOut()
     }
 
-    val onTestInfoFileChooserClick: () -> Unit = {
-        appState=AppState.DIALOG_OPEN
-    }
-
     val onFeatureFileChooserClose: (result: Array<java.io.File>?) -> Unit ={ files->
         if(files!=null){
             addFeatureFilesToFeatureFileList(files)
@@ -108,7 +110,7 @@ class ImporterViewModel(
     */
     val onFeatureFileCheckedChange: (featureFile: FeatureFile, checked: Boolean) -> Unit = { featureFile, checked ->
         if (maxFilesCheckedReached()){
-            logger.warn("Max. no. of feature files reached!");
+            logger.warn("Max. no. of feature files reached!")
             iUserMessageHandler.showUserMessage("Max. no. of feature files reached!")
             featureFile.isChecked = false
         }
@@ -212,23 +214,27 @@ class ImporterViewModel(
         appState=AppState.IMPORTING
         percentageProcessed = 0f
         featureFileList.map{ file-> if(file.isChecked){
-            logger.info("Importing file: "+file.path);
+            logger.info("Importing file: "+file.path)
             iXRayRESTClient.importFileToXray(file.path,this@ImporterViewModel).onSuccess {
-                logger.info("Import and tagging OK. Starting Tagging.");
+                logger.info("Import and tagging OK. Starting Tagging.")
                 // On Success start tagging tests and preconditions
                 val fileManager = FileManager()
                 val xRayTagger = XRayTagger(iUserMessageHandler)
-                if(!it.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, it.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
-                if(!it.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, it.updatedOrCreatedPreconditions, fileManager)
+
+                // Tag only if enabled
+                if(!isTaggingDisabled){
+                    if(!it.updatedOrCreatedTests.isEmpty()) xRayTagger.processUpdatedOrCreatedTests(file.path, it.updatedOrCreatedTests, fileManager, iXRayRESTClient, this@ImporterViewModel)
+                    if(!it.updatedOrCreatedPreconditions.isEmpty()) xRayTagger.processUpdatedOrCreatedPreconditions(file.path, it.updatedOrCreatedPreconditions, fileManager)
+                }
 
                 file.isImported = true
                 iUserMessageHandler.showUserMessage("Imported file successfully: "+file.name)
             }.onError {
-                logger.error("Error importing file: "+it);
+                logger.error("Error importing file: "+it)
                 iUserMessageHandler.showUserMessage("Error importing file: "+it)
                 file.isError = true
             }
-            calculatePercentageProcessed();
+            calculatePercentageProcessed()
             if(file.isImported){file.isChecked=false}else{
                 file.isError=true
             }
